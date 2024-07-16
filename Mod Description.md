@@ -19,7 +19,7 @@ Items can be quickly deposited and withdrawn
 ![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
 
 <video width="480" height="480" autoplay loop>
-  <source src="https://github.com/Khazoda/basic-storage/raw/Web-Assets/description_common/recipe_video.mp4" type="video/mp4">
+  <source src="https://github.com/Khazoda/basic-storage/raw/Web-Assets/description_common/recipe_video.mov" type="video/mp4">
 </video>
 
 ![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
