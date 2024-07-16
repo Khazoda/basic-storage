@@ -22,7 +22,9 @@ RECIPE
 
 ![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
 
-GIF OF INSERTING/REMOVING
+<video width="480" height="480" autoplay loop>
+  <source src="https://github.com/Khazoda/basic-storage/raw/Web-Assets/description_common/demo_video.mp4" type="video/mp4">
+</video>
 
 ![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
 
