@@ -16,17 +16,36 @@ Items can be quickly deposited and withdrawn
 - by using hoppers/hopper carts
 - by using third party mods (e.g. AE2, RS, Tom's Storage)
 
-![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
+### Why use this mod?
+Basic Storage is not the first mod to add blocks that function like crates.
+This mod exists specifically to fulfil the following requirements:
+- Simplified vanilla-esque design (no upgrades, no multiple crate types)
+- Large storage size, low crafting cost (1 billion items, made from planks and sticks)
+- Low file size & performance footprint
+- Up to date with modern Minecraft versions
+
+If you'd prefer to use a similar mod with blocks that support item compacting, block locking, an upgrade system etc., then please scroll further down to the **Acknowledgments** section. Some similar mods are listed there.
+  
+# Recipe 🔨
+Crates can be made from any type of wooden planks, as well as sticks.
 
 ![Recipe Gif](https://github.com/Khazoda/basic-storage/raw/Web-Assets/description_common/recipe_video.gif)
 
-![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
+# Demonstration 📽️
+Crates save you time by giving you easy access to all of your materials.
 
-<video width="480" height="480" autoplay loop>
+<video width="480" height="480" autoplay loop controls>
   <source src="https://github.com/Khazoda/basic-storage/raw/Web-Assets/description_common/demo_video.mp4" type="video/mp4">
 </video>
 
+
 ![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
+
+#### This mod is part of my _Basic_ series of mods, which try to foster a vanilla-feeling experience while also giving players new content to enjoy.
+#### [View Collection](https://modrinth.com/collection/YqBvBHEr)
+
+![Divider](https://github.com/Khazoda/basic-storage/blob/Web-Assets/description_common/divider.png?raw=true)
+
 
 # Frequently Asked Questions (FAQ) 🧡
 
@@ -38,5 +57,8 @@ Items can be quickly deposited and withdrawn
   _`Unfortunately I don't have the time to backport Basic Storage to earlier versions. The mod will however support each new version of Minecraft.`_
 - I found a bug / my game crashed  
    _`If you find any problems with Basic Storage, please feel encouraged to create an issue on the GitHub repository issue tracker. Bug reports are incredibly helpful, and help make Basic Storage the best it can be.`_
+
+# Acknowledgements 💌
+Basic Storage wouldn't exist without the hard work and creativity of those that came before it. I'd like to give special thanks to the talented developers and artists behind JABBA, Storage Drawers and Extended Drawers, as well as every other barrel/drawer mod that came before them.
 
 __Thank you to all the wonderful translation contributors!__
