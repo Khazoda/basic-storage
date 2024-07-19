@@ -5,7 +5,7 @@ Supported Languages | [Help translate this mod into *your* language](https://poe
 
 </sub>
 
-![Basic Storage Banner](https://raw.githubusercontent.com/Khazoda/basic-storage/91be032f3c29cd85d36ddc56825fdc2eccbad727/description_common/banner.png)
+![Basic Storage Banner](https://raw.githubusercontent.com/Khazoda/basic-storage/Web-Assets/description_common/banner.png)
 
 # About 📦
 
