@@ -2,16 +2,12 @@ package com.khazoda.basicstorage.storage;
 
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
-import com.khazoda.basicstorage.structure.CrateSlotComponent;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.registry.RegistryWrapper;
 
 import static com.khazoda.basicstorage.block.CrateBlock.canInsert;
 
@@ -30,19 +26,6 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
   @Override
   public CrateBlockEntity getOwner() {
     return owner;
-  }
-
-  public void readComponent(CrateSlotComponent component) {
-    item = component.item();
-    count = component.count();
-    if (item.isBlank()) count = 0;
-  }
-
-  public CrateSlotComponent toComponent() {
-    return new CrateSlotComponent(
-        item,
-        count
-    );
   }
 
   @Override
@@ -117,14 +100,14 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
     update();
   }
 
-  public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-    item = ItemVariant.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, registryLookup), nbt.getCompound("item")).getOrThrow();
+  public void readNbt(NbtCompound nbt) {
+    item = ItemVariant.fromNbt(nbt.getCompound("item"));
     count = (int) nbt.getLong("count");
     if (item.isBlank()) count = 0;
   }
 
-  public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-    nbt.put("item", ItemVariant.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE, registryLookup), item).getOrThrow());
+  public void writeNbt(NbtCompound nbt) {
+    nbt.put("item", item.toNbt());
     nbt.putLong("count", count);
   }
 

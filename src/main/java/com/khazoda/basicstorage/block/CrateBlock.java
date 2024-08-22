@@ -2,13 +2,10 @@ package com.khazoda.basicstorage.block;
 
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.registry.BlockRegistry;
-import com.khazoda.basicstorage.registry.DataComponentRegistry;
 import com.khazoda.basicstorage.registry.SoundRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
-import com.khazoda.basicstorage.structure.CrateSlotComponent;
 import com.khazoda.basicstorage.util.BlockUtils;
 import com.khazoda.basicstorage.util.NumberFormatter;
-import com.mojang.serialization.MapCodec;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
@@ -19,16 +16,16 @@ import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.enums.NoteBlockInstrument;
+import net.minecraft.block.enums.Instrument;
 import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
@@ -44,6 +41,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
@@ -62,9 +60,8 @@ import static java.lang.Math.toIntExact;
  * Shift Left Click - Remove one stack
  */
 public class CrateBlock extends Block implements BlockEntityProvider {
-  public static final MapCodec<CrateBlock> CODEC = CrateBlock.createCodec(CrateBlock::new);
   public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
-  public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(2.5f).pistonBehavior(PistonBehavior.BLOCK).instrument(NoteBlockInstrument.BASS).mapColor(MapColor.OAK_TAN);
+  public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(2.5f).pistonBehavior(PistonBehavior.BLOCK).instrument(Instrument.BASS).mapColor(MapColor.OAK_TAN);
 
   private static Random random;
 
@@ -165,9 +162,11 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     /* Show exact contents of crate to play via message */
     Text message;
     if (slot.isBlank()) {
-      message = Text.translatable("message.basicstorage.crate.empty").withColor(0xFFDD99);
+      message = Text.translatable("message.basicstorage.crate.empty").styled(s ->
+          s.withColor(0xFFDD99));
     } else {
-      message = Text.literal(NumberFormatter.toFormattedNumber(slot.getAmount()) + " " + slot.getResource().getItem().getName().getString()).withColor(0xFFDD99);
+      message = Text.literal(NumberFormatter.toFormattedNumber(slot.getAmount()) + " " + slot.getResource().getItem().getName().getString()).styled(s ->
+          s.withColor(0xFFDD99));
     }
     player.sendMessage(message, true);
     return ActionResult.CONSUME;
@@ -186,7 +185,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       if (stack.isEmpty()) return false;
       if (stack.isDamaged()) return false;
       if (stack.isOf(BlockRegistry.CRATE_BLOCK.asItem())
-          && stack.contains(DataComponentRegistry.CRATE_CONTENTS)) return false;
+          && stack.getOrCreateNbt().contains("crate_contents")) return false;
       if (!ItemVariant.of(stack).equals(slot.getResource()) && !slot.isBlank()) return false;
       return slot.isBlank() || stack.isOf(slot.getResource().getItem());
     }
@@ -196,7 +195,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
    * Method for removing either 1 item or a whole stack of items from a crate
    */
   @Override
-  protected void onBlockBreakStart(BlockState state, World world, BlockPos pos, PlayerEntity player) {
+  public void onBlockBreakStart(BlockState state, World world, BlockPos pos, PlayerEntity player) {
     if (!player.canModifyBlocks()) return;
 
     CrateBlockEntity cbe = (CrateBlockEntity) world.getBlockEntity(pos);
@@ -235,7 +234,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
    * Handles breaking in creative mode
    */
   @Override
-  public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+  public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
     BlockEntity be = world.getBlockEntity(pos);
     if (!(be == null)) {
       CrateBlockEntity cbe = (CrateBlockEntity) be;
@@ -244,11 +243,10 @@ public class CrateBlock extends Block implements BlockEntityProvider {
             .forEach(stack -> ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), stack));
       }
     }
-    return super.onBreak(world, pos, state, player);
   }
 
   @Override
-  protected List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
+  public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
     return super.getDroppedStacks(state, builder);
   }
 
@@ -256,14 +254,17 @@ public class CrateBlock extends Block implements BlockEntityProvider {
    * Applies custom tooltip showing crate contents
    **/
   @Override
-  public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
-    CrateSlotComponent contentsComponent = stack.get(DataComponentRegistry.CRATE_CONTENTS);
-    if (contentsComponent == null) return;
-    ItemVariant item = contentsComponent.item();
-    int amount = contentsComponent.count();
+  public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
+    NbtCompound itemNbt = stack.getOrCreateNbt();
+    if (!itemNbt.contains("crate_contents")) return;
+    NbtCompound crateContents = itemNbt.getCompound("crate_contents");
+    ItemVariant item = ItemVariant.fromNbt(crateContents.getCompound("item"));
+    int count = crateContents.getInt("count");
 
-    MutableText contents_line_2 = Text.literal(item.getItem().getName().getString()).withColor(0xCCAA77);
-    MutableText contents_line_1 = Text.literal("x" + NumberFormatter.toFormattedNumber(amount)).withColor(0xFFDD99);
+    MutableText contents_line_2 = Text.literal(item.getItem().getName().getString()).styled(s ->
+        s.withColor(0xCCAA77));
+    MutableText contents_line_1 = Text.literal("x" + NumberFormatter.toFormattedNumber(count)).styled(s ->
+        s.withColor(0xFFDD99));
 
     tooltip.add(contents_line_1);
     tooltip.add(contents_line_2);
@@ -279,7 +280,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   }
 
   @Override
-  protected boolean canPathfindThrough(BlockState state, NavigationType type) {
+  public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
     return false;
   }
 
@@ -296,7 +297,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   }
 
   @Override
-  protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+  public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
     if (state.isOf(newState.getBlock())) {
       return;
     }
@@ -308,12 +309,12 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   }
 
   @Override
-  protected BlockState rotate(BlockState state, BlockRotation rotation) {
+  public BlockState rotate(BlockState state, BlockRotation rotation) {
     return state.with(FACING, rotation.rotate(state.get(FACING)));
   }
 
   @Override
-  protected BlockState mirror(BlockState state, BlockMirror mirror) {
+  public BlockState mirror(BlockState state, BlockMirror mirror) {
     return state.rotate(mirror.getRotation(state.get(FACING)));
   }
 
@@ -335,11 +336,6 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     } else {
       return 0;
     }
-  }
-
-  @Override
-  public MapCodec<CrateBlock> getCodec() {
-    return CODEC;
   }
 
   /**

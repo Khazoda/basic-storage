@@ -2,7 +2,6 @@ package com.khazoda.basicstorage.renderer;
 
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.mixin.RenderSystemAccessor;
-import com.khazoda.basicstorage.registry.DataComponentRegistry;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -36,14 +35,14 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
     BakedModelManager modelManager = client.getBakedModelManager();
     BakedModel crateModel = modelManager.getModel(CRATE_ID);
 
-    if (!mode.equals(ModelTransformationMode.GUI) || !stack.contains(DataComponentRegistry.CRATE_CONTENTS)) {
+    if (!mode.equals(ModelTransformationMode.GUI) || !stack.getOrCreateNbt().contains("crate_contents")) {
       // Render crate crateModel normally
       renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, false);
     } else {
       // Render create crateModel in GUI with extra information
-      if (stack.contains(DataComponentRegistry.CRATE_CONTENTS)) {
+      if (stack.getOrCreateNbt().contains("crate_contents")) {
         renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, true);
-        ItemVariant item = Objects.requireNonNull(stack.get(DataComponentRegistry.CRATE_CONTENTS)).item();
+        ItemVariant item = Objects.requireNonNull(ItemVariant.fromNbt(stack.getOrCreateNbt().getCompound("crate_contents").getCompound("item")));
         renderCrateContents(itemRenderer, item, light, matrices, vertexConsumerProvider);
       }
     }

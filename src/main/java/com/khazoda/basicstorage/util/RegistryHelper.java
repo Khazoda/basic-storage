@@ -2,13 +2,11 @@ package com.khazoda.basicstorage.util;
 
 import com.khazoda.basicstorage.Constants;
 import net.minecraft.block.Block;
-import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 
 public class RegistryHelper {
@@ -54,7 +52,7 @@ public class RegistryHelper {
   }
 
   public static <I extends ItemGroup> I registerItemGroup(I itemGroup) {
-    Registry.register(Registries.ITEM_GROUP, Identifier.of("basicstorage"), itemGroup);
+    Registry.register(Registries.ITEM_GROUP, new Identifier("basicstorage"), itemGroup);
     return itemGroup;
   }
 
@@ -63,10 +61,4 @@ public class RegistryHelper {
   public static Item registerItem(String name, Item item) {
     return Registry.register(Registries.ITEM, newID(name), item);
   }
-
-  // Register Armor Material
-  public static RegistryEntry<ArmorMaterial> registerArmorMaterial(String name, ArmorMaterial material) {
-    return Registry.registerReference(Registries.ARMOR_MATERIAL, newID(name), material);
-  }
-
 }

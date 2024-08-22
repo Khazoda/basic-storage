@@ -4,10 +4,8 @@ import com.khazoda.basicstorage.BasicStorage;
 import com.khazoda.basicstorage.block.CrateBlock;
 import com.khazoda.basicstorage.util.RegistryHelper;
 import net.minecraft.block.Block;
-import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraft.registry.entry.RegistryEntry;
 
 public class BlockRegistry {
   public static final Item.Settings crateItemSettings = new Item.Settings().maxCount(64).fireproof();
@@ -38,10 +36,5 @@ public class BlockRegistry {
   /* Register item */
   private static Item register(String name) {
     return RegistryHelper.registerItem(name, new Item(new Item.Settings().maxCount(64)));
-  }
-
-  /* Register armour material */
-  private static RegistryEntry<ArmorMaterial> register(String name, ArmorMaterial material) {
-    return RegistryHelper.registerArmorMaterial(name, material);
   }
 }

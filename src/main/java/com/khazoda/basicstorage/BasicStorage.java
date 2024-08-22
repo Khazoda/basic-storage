@@ -20,16 +20,15 @@ public class BasicStorage implements ModInitializer {
   public void onInitialize() {
     BS_LOG.info("[Basic Storage] Filling crates...");
 
-    Registry.register(Registries.ITEM_GROUP, Identifier.of(Constants.BS_NAMESPACE), BW_ITEMGROUP);
+    Registry.register(Registries.ITEM_GROUP, new Identifier(Constants.BS_NAMESPACE), BW_ITEMGROUP);
     BlockRegistry.init();
     BlockEntityRegistry.init();
     SoundRegistry.init();
     EventRegistry.init();
-    DataComponentRegistry.init();
 
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK));
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK));
 
-    BS_LOG.info("[Basic Storage] {}/6 Crates filled!", loadedRegistries);
+    BS_LOG.info("[Basic Storage] {}/5 Crates filled!", loadedRegistries);
   }
 }
