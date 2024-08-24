@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtCompound;
 
 import static com.khazoda.basicstorage.block.CrateBlock.canInsert;
 
+@SuppressWarnings("UnstableApiUsage")
 public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> implements SingleSlotStorage<ItemVariant>, CrateStorage {
   private ItemVariant item = ItemVariant.blank();
   private int count;
@@ -37,7 +38,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
       updateSnapshots(transaction);
       count += inserted;
       if (item.isBlank()) {
-        item = resource;
+        this.item = resource;
         this.markedDirty = true;
       }
     } else if (inserted < 0) {
@@ -48,15 +49,16 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
 
   @Override
   public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-    if (!resource.equals(item)) return 0;
+//    if (!resource.equals(item)) return 0;
     int extracted = (int) Math.min(count, maxAmount);
     if (extracted > 0) {
       updateSnapshots(transaction);
       count -= extracted;
       if (count == 0) {
         item = ItemVariant.blank();
-        this.markedDirty = true;
+        markedDirty = true;
       }
+
     } else if (extracted < 0) {
       return 0;
     }
@@ -97,7 +99,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
 
   @Override
   protected void onFinalCommit() {
-    update();
+    triggerRefresh();
   }
 
   public void readNbt(NbtCompound nbt) {

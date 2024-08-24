@@ -11,7 +11,7 @@ public interface CrateStorage extends Storage<ItemVariant>{
 
   long getCapacity();
 
-  default void update() {
+  default void triggerRefresh() {
     getOwner().refresh();
   }
 }

@@ -185,7 +185,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       if (stack.isEmpty()) return false;
       if (stack.isDamaged()) return false;
       if (stack.isOf(BlockRegistry.CRATE_BLOCK.asItem())
-          && stack.getOrCreateNbt().contains("crate_contents")) return false;
+          && stack.getOrCreateNbt().getCompound("BlockEntityTag").contains("crate_contents")) return false;
       if (!ItemVariant.of(stack).equals(slot.getResource()) && !slot.isBlank()) return false;
       return slot.isBlank() || stack.isOf(slot.getResource().getItem());
     }
@@ -255,10 +255,10 @@ public class CrateBlock extends Block implements BlockEntityProvider {
    **/
   @Override
   public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
-    NbtCompound itemNbt = stack.getOrCreateNbt();
-    if (!itemNbt.contains("crate_contents")) return;
-    NbtCompound crateContents = itemNbt.getCompound("crate_contents");
-    ItemVariant item = ItemVariant.fromNbt(crateContents.getCompound("item"));
+    NbtCompound nbt = stack.getOrCreateNbt().getCompound("BlockEntityTag");
+    if (!nbt.contains("crate_contents")) return;
+    NbtCompound crateContents = nbt.getCompound("crate_contents");
+    ItemVariant item = ItemVariant.fromNbt(nbt.getCompound("item"));
     int count = crateContents.getInt("count");
 
     MutableText contents_line_2 = Text.literal(item.getItem().getName().getString()).styled(s ->
@@ -348,7 +348,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       if (!player.isSneaking()) slot.insert(slot.getResource(), 100000, t);
       t.commit();
     }
-    slot.update();
+    slot.triggerRefresh();
     return ActionResult.SUCCESS;
   }
 }

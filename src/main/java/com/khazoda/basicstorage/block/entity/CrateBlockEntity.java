@@ -38,7 +38,7 @@ public class CrateBlockEntity extends BlockEntity {
    * NBT Operations
    **/
   @Override
-  protected void writeNbt(NbtCompound nbt) {
+  public void writeNbt(NbtCompound nbt) {
     if (this.storage.isBlank()) return;
     var storageNbt = new NbtCompound();
     storage.writeNbt(storageNbt);
@@ -52,7 +52,6 @@ public class CrateBlockEntity extends BlockEntity {
 
   @Override
   public void readNbt(NbtCompound nbt) {
-    super.readNbt(nbt);
     if (nbt.contains("crateStack", 10)) {
       storage.readNbt(nbt.getCompound("crateStack"));
       NbtCompound contentsTag = nbt.getCompound("crate_contents");
@@ -62,8 +61,8 @@ public class CrateBlockEntity extends BlockEntity {
         this.storage.insert(ItemVariant.fromNbt(contentsTag.getCompound("item")), contentsTag.getInt("count"), t);
         t.commit();
       }
-      this.refresh();
     }
+    this.refresh();
   }
 
   /**

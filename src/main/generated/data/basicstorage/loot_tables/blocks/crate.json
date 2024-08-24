@@ -13,11 +13,11 @@
           "type": "minecraft:item",
           "functions": [
             {
-              "function": "minecraft:copy_components",
-              "include": [
-                "basicstorage:crate_contents"
-              ],
+              "function": "minecraft:copy_name",
               "source": "block_entity"
+            },
+            {
+              "function": "basicstorage:drawer_contents"
             }
           ],
           "name": "basicstorage:crate"

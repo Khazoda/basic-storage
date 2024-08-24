@@ -15,6 +15,7 @@ import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Quaternionf;
@@ -35,14 +36,15 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
     BakedModelManager modelManager = client.getBakedModelManager();
     BakedModel crateModel = modelManager.getModel(CRATE_ID);
 
-    if (!mode.equals(ModelTransformationMode.GUI) || !stack.getOrCreateNbt().contains("crate_contents")) {
+    NbtCompound stackNBT = stack.getOrCreateNbt().getCompound("BlockEntityTag");
+    if (!mode.equals(ModelTransformationMode.GUI) || !stackNBT.contains("crate_contents")) {
       // Render crate crateModel normally
       renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, false);
     } else {
       // Render create crateModel in GUI with extra information
-      if (stack.getOrCreateNbt().contains("crate_contents")) {
+      if (stackNBT.contains("crate_contents")) {
         renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, true);
-        ItemVariant item = Objects.requireNonNull(ItemVariant.fromNbt(stack.getOrCreateNbt().getCompound("crate_contents").getCompound("item")));
+        ItemVariant item = Objects.requireNonNull(ItemVariant.fromNbt(stackNBT.getCompound("item")));
         renderCrateContents(itemRenderer, item, light, matrices, vertexConsumerProvider);
       }
     }
