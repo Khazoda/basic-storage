@@ -38,8 +38,8 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
       updateSnapshots(transaction);
       count += inserted;
       if (item.isBlank()) {
-        this.item = resource;
-        this.markedDirty = true;
+        item = resource;
+        markedDirty = true;
       }
     } else if (inserted < 0) {
       return 0;
@@ -50,7 +50,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
   @Override
   public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
 //    if (!resource.equals(item)) return 0;
-    int extracted = (int) Math.min(count, maxAmount);
+    long extracted = Math.min(count, maxAmount);
     if (extracted > 0) {
       updateSnapshots(transaction);
       count -= extracted;
