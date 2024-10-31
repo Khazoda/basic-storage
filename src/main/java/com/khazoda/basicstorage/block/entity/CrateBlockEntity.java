@@ -27,11 +27,13 @@ public class CrateBlockEntity extends BlockEntity {
    * modified markDirty() method
    */
   public void refresh() {
-    if (world instanceof ServerWorld) {
+    if (world instanceof ServerWorld serverWorld) {
       world.getWorldChunk(pos).setNeedsSaving(true);
       var state = getCachedState();
-      world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+      world.updateListeners(pos, state, state,
+          Block.NOTIFY_LISTENERS | Block.NOTIFY_NEIGHBORS | Block.FORCE_STATE);
       world.updateComparators(pos, state.getBlock());
+      serverWorld.getChunkManager().markForUpdate(pos);
     }
   }
 
@@ -40,13 +42,18 @@ public class CrateBlockEntity extends BlockEntity {
    **/
   @Override
   public void writeNbt(NbtCompound nbt) {
-    if (this.storage.isBlank()) return;
     var storageNbt = new NbtCompound();
     storage.writeNbt(storageNbt);
-    nbt.put("item", this.storage.getResource().toNbt());
-    NbtCompound crateContents = new NbtCompound();
-    crateContents.putLong("count", this.storage.getAmount());
-    nbt.put("crate_contents", crateContents);
+
+    if (!this.storage.isBlank()) {
+      nbt.put("item", this.storage.getResource().toNbt());
+      NbtCompound crateContents = new NbtCompound();
+      crateContents.putLong("count", this.storage.getAmount());
+      nbt.put("crate_contents", crateContents);
+    } else {
+      nbt.remove("item");
+      nbt.remove("crate_contents");
+    }
     nbt.put("crateStack", storageNbt);
   }
 
