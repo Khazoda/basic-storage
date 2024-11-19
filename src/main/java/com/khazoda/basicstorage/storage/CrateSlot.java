@@ -53,7 +53,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
     long extracted = Math.min(count, maxAmount);
     if (extracted > 0) {
       updateSnapshots(transaction);
-      count -= extracted;
+      count -= (int) extracted;
       if (count == 0) {
         item = ItemVariant.blank();
         markedDirty = true;
