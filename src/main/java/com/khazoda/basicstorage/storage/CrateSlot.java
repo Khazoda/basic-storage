@@ -49,7 +49,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
 
   @Override
   public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-//    if (!resource.equals(item)) return 0;
+    if (!resource.equals(item)) return 0;
     long extracted = Math.min(count, maxAmount);
     if (extracted > 0) {
       updateSnapshots(transaction);
