@@ -15,8 +15,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.enums.Instrument;
-import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
@@ -27,7 +25,6 @@ import net.minecraft.item.Items;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -62,7 +59,6 @@ import static java.lang.Math.toIntExact;
  */
 public class CrateBlock extends BlockWithEntity implements BlockEntityProvider {
   public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
-  public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(2.5f).pistonBehavior(PistonBehavior.BLOCK).instrument(Instrument.BASS).mapColor(MapColor.OAK_TAN);
 
   private static Random random;
 
@@ -71,11 +67,6 @@ public class CrateBlock extends BlockWithEntity implements BlockEntityProvider {
     random = new Random();
     setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.NORTH));
   }
-
-  public CrateBlock() {
-    this(defaultSettings);
-  }
-
 
   /**
    * Event hook instead of onUse() method in order to capture interactions while sneaking

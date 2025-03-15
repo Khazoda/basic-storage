@@ -3,20 +3,39 @@ package com.khazoda.basicstorage.registry;
 import com.khazoda.basicstorage.BasicStorage;
 import com.khazoda.basicstorage.block.CrateBlock;
 import com.khazoda.basicstorage.block.CrateStationBlock;
+import com.khazoda.basicstorage.config.ModConfig;
 import com.khazoda.basicstorage.util.RegistryHelper;
 import net.minecraft.block.Block;
+import net.minecraft.block.MapColor;
+import net.minecraft.block.enums.Instrument;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.sound.BlockSoundGroup;
 
 public class BlockRegistry {
   public static final Item.Settings crateItemSettings = new Item.Settings().maxCount(64).fireproof();
 
-  public static final Block CRATE_BLOCK = register("crate", new CrateBlock(), crateItemSettings);
+  private static Block.Settings getCrateSettings() {
+    Block.Settings settings = Block.Settings.create()
+        .sounds(BlockSoundGroup.WOOD)
+        .pistonBehavior(PistonBehavior.BLOCK)
+        .instrument(Instrument.BASS)
+        .mapColor(MapColor.OAK_TAN);
+
+    if (ModConfig.getInstance().isbreakOnlyWithHammer()) {
+      settings.strength(-1.0F, 3600000.0F); // Bedrock-like settings
+    } else {
+      settings.strength(2.5f); // Normal settings
+    }
+
+    return settings;
+  }
+
+  public static final Block CRATE_BLOCK = register("crate", new CrateBlock(getCrateSettings()), crateItemSettings);
   public static final Block CRATE_STATION_BLOCK = register("crate_station", new CrateStationBlock(), crateItemSettings);
 
-
   public static void init() {
-
     BasicStorage.loadedRegistries += 1;
   }
 
