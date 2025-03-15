@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.nbt.NbtCompound;
 
 import static com.khazoda.basicstorage.block.CrateBlock.canInsert;
+import static com.khazoda.basicstorage.storage.CrateStationHelper.notifyNearbyStations;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> implements SingleSlotStorage<ItemVariant>, CrateStorage {
@@ -31,6 +32,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
 
   @Override
   public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+    boolean wasBlank = isBlank();
     if (!canInsert(resource.toStack(), this, maxAmount > 1)) return 0;
     if (maxAmount > 1 && !resource.equals(this.getResource()) && !this.isBlank()) return 0;
     int inserted = (int) Math.min(getCapacity() - count, maxAmount);
@@ -41,6 +43,13 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
         item = resource;
         markedDirty = true;
       }
+      if (wasBlank) {
+        transaction.addOuterCloseCallback((result) -> {
+          if (owner.getWorld() != null) {
+            notifyNearbyStations(owner.getWorld(), owner.getPos());
+          }
+        });
+      }
     } else if (inserted < 0) {
       return 0;
     }
@@ -49,16 +58,23 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot> imp
 
   @Override
   public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+    long amountBefore = count;
     if (!resource.equals(item)) return 0;
-    long extracted = Math.min(count, maxAmount);
+    int extracted = (int) Math.min(count, maxAmount);
     if (extracted > 0) {
       updateSnapshots(transaction);
-      count -= (int) extracted;
+      count -= extracted;
       if (count == 0) {
         item = ItemVariant.blank();
         markedDirty = true;
       }
-
+      if (amountBefore == extracted) {
+        transaction.addOuterCloseCallback((result) -> {
+          if (owner.getWorld() != null) {
+            notifyNearbyStations(owner.getWorld(), owner.getPos());
+          }
+        });
+      }
     } else if (extracted < 0) {
       return 0;
     }

@@ -130,10 +130,9 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 
     for (BlockPos cratePos : new ArrayList<>(compatibleCrates)) {
       if (world == null)
-        return 0; // todo: if something goes wrong, remove this and see if things work lol
+        return 0;
       BlockEntity be = world.getBlockEntity(cratePos);
       if (!(be instanceof CrateBlockEntity crate)) {
-        // compatibleCrates.remove(cratePos); //TODO: Maybe Remove?
         continue;
       }
 

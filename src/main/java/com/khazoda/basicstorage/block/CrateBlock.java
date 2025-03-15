@@ -5,6 +5,7 @@ import com.khazoda.basicstorage.registry.BlockRegistry;
 import com.khazoda.basicstorage.registry.ItemRegistry;
 import com.khazoda.basicstorage.registry.SoundRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
+import com.khazoda.basicstorage.storage.CrateStationHelper;
 import com.khazoda.basicstorage.util.BlockUtils;
 import com.khazoda.basicstorage.util.NumberFormatter;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
@@ -17,6 +18,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.Instrument;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -47,6 +49,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Random;
 
+import static com.khazoda.basicstorage.storage.CrateStationHelper.notifyNearbyStations;
 import static java.lang.Math.toIntExact;
 
 /**
@@ -304,6 +307,8 @@ public class CrateBlock extends BlockWithEntity implements BlockEntityProvider {
     BlockEntity blockEntity = world.getBlockEntity(pos);
     if (blockEntity instanceof CrateBlockEntity) {
       world.updateComparators(pos, state.getBlock());
+      notifyNearbyStations(world, pos);
+      world.emitGameEvent(null, GameEvent.BLOCK_DESTROY, pos);
     }
     super.onStateReplaced(state, world, pos, newState, moved);
   }
@@ -355,5 +360,12 @@ public class CrateBlock extends BlockWithEntity implements BlockEntityProvider {
   @Override
   public BlockRenderType getRenderType(BlockState state) {
     return BlockRenderType.MODEL;
+  }
+
+  @Override
+  public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+    super.onPlaced(world, pos, state, placer, itemStack);
+    CrateStationHelper.notifyNearbyStations(world, pos);
+    world.emitGameEvent(placer, GameEvent.BLOCK_PLACE, pos);
   }
 }
