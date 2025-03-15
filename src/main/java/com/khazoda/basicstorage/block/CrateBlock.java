@@ -2,6 +2,7 @@ package com.khazoda.basicstorage.block;
 
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.registry.BlockRegistry;
+import com.khazoda.basicstorage.registry.ItemRegistry;
 import com.khazoda.basicstorage.registry.SoundRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
 import com.khazoda.basicstorage.util.BlockUtils;
@@ -11,10 +12,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.MapColor;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.Instrument;
 import net.minecraft.block.piston.PistonBehavior;
@@ -59,7 +57,7 @@ import static java.lang.Math.toIntExact;
  * Left Click - Remove one item
  * Shift Left Click - Remove one stack
  */
-public class CrateBlock extends Block implements BlockEntityProvider {
+public class CrateBlock extends BlockWithEntity implements BlockEntityProvider {
   public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
   public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(2.5f).pistonBehavior(PistonBehavior.BLOCK).instrument(Instrument.BASS).mapColor(MapColor.OAK_TAN);
 
@@ -95,6 +93,8 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
       CrateBlockEntity cbe = (CrateBlockEntity) be;
       ItemStack playerStack = player.getMainHandStack();
+      if (playerStack.isOf(ItemRegistry.CRATE_HAMMER_ITEM))
+        return ActionResult.PASS;
       CrateSlot slot = cbe.storage;
       if (playerStack.isOf(Items.DEBUG_STICK)) return debugInitOnUseMethod(player, slot);
 
@@ -113,9 +113,9 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         }
         t.commit();
         if (inserted == 1)
-          world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-1 + random.nextFloat() * (1 + 1)) / 10), false);
+          world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.HANDLE_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-1 + random.nextFloat() * (1 + 1)) / 10), false);
         if (inserted > 1)
-          world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1f, false);
+          world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.HANDLE_MANY, SoundCategory.BLOCKS, 1f, 1f, false);
         state.updateNeighbors(world, pos, 1);
         cbe.refresh();
         world.updateComparators(pos, state.getBlock());
@@ -218,9 +218,9 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       player.getInventory().offerOrDrop(item.toStack(extracted));
       t.commit();
       if (extracted == 1)
-        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 0.6f, 1.2f + ((-1 + random.nextFloat() * (1 + 1)) / 10), false);
+        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.HANDLE_ONE, SoundCategory.BLOCKS, 0.6f, 1.2f + ((-1 + random.nextFloat() * (1 + 1)) / 10), false);
       if (extracted > 1)
-        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.EXTRACT_MANY, SoundCategory.BLOCKS, 0.75f, 1f, false);
+        world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundRegistry.HANDLE_MANY, SoundCategory.BLOCKS, 0.75f, 1f, false);
 
       world.playSound(pos.getX(), pos.getY(), pos.getZ(), SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.BLOCKS, 0.35f, 1f, false);
     }
@@ -350,5 +350,10 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     }
     slot.triggerRefresh();
     return ActionResult.SUCCESS;
+  }
+
+  @Override
+  public BlockRenderType getRenderType(BlockState state) {
+    return BlockRenderType.MODEL;
   }
 }
