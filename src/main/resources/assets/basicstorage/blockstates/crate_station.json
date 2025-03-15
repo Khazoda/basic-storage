@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "basicstorage:block/crate_station"
+      },
+      {
+        "model": "basicstorage:block/crate_station",
+        "y": 90
+      },
+      {
+        "model": "basicstorage:block/crate_station",
+        "y": 180
+      },
+      {
+        "model": "basicstorage:block/crate_station",
+        "y": 270
+      }
+    ]
+  }
+}

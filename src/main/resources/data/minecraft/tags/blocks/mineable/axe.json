@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "basicstorage:crate"
+    "basicstorage:crate",
+    "basicstorage:crate_station"
   ]
 }

@@ -2,6 +2,5 @@
   "block.basicstorage.crate": "Kasa",
   "message.basicstorage.crate.empty": "Boş",
   "command.basicstorage.wiki": "Basit Depolama ",
-  "basicstorage.itemGroup": "Basit Depolama",
-  "command.basicstorage.root": "You are using §6Basic Storage §r"
+  "basicstorage.itemGroup": "Basit Depolama"
 }

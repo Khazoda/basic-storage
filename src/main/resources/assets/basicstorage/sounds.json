@@ -1,17 +1,22 @@
 {
-  "insert_one": {
+  "handle_one": {
     "sounds": [
-      "basicstorage:insert_one"
+      "basicstorage:handle_one"
     ]
   },
-  "insert_many": {
+  "handle_many": {
     "sounds": [
-      "basicstorage:insert_many"
+      "basicstorage:handle_many"
     ]
   },
-  "extract_many": {
+  "handle_loads": {
     "sounds": [
-      "basicstorage:extract_many"
+      "basicstorage:handle_loads"
+    ]
+  },
+  "no_match": {
+    "sounds": [
+      "basicstorage:no_match"
     ]
   }
 }
