@@ -1,5 +1,6 @@
 package com.khazoda.basicstorage;
 
+import com.khazoda.basicstorage.config.ModConfig;
 import com.khazoda.basicstorage.datagen.CrateContentsLootFunction;
 import com.khazoda.basicstorage.registry.*;
 import net.fabricmc.api.ModInitializer;
@@ -21,6 +22,7 @@ public class BasicStorage implements ModInitializer {
   public void onInitialize() {
     BS_LOG.info("[Basic Storage] Filling crates...");
 
+    ModConfig.getInstance().load();
     Registry.register(Registries.ITEM_GROUP, new Identifier(Constants.BS_NAMESPACE), BW_ITEMGROUP);
     CrateContentsLootFunction.register();
     BlockRegistry.init();
