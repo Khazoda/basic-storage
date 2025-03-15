@@ -1,0 +1,11 @@
+{
+  "block.basicstorage.crate": "Caisse",
+  "message.basicstorage.crate.empty": "Vide",
+  "command.basicstorage.root": "Vous utilisez §6Basic Storage §r",
+  "command.basicstorage.wiki": "Visitez le wiki de Basic Storage",
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "Station de Caisse",
+  "item.basicstorage.crate_hammer": "Marteau de Caisse",
+  "message.basicstorage.station.connected_crate_count": "• %d Caisses Connectées •",
+  "message.basicstorage.station.no_matching_crates": "• Pas de Caisses Correspondantes •"
+}

@@ -2,6 +2,10 @@
   "block.basicstorage.crate": "Låda",
   "message.basicstorage.crate.empty": "Tom",
   "command.basicstorage.root": "Du använder §6Simpel Förvaring §r",
-  "command.basicstorage.wiki": "Besök Simpel Förvaring viki",
-  "basicstorage.itemGroup": "Simpel Förvaring"
+  "command.basicstorage.wiki": "Besök Enkel Förvaring viki",
+  "basicstorage.itemGroup": "Enkel Förvaring",
+  "block.basicstorage.crate_station": "Låd-station",
+  "item.basicstorage.crate_hammer": "Låd-hammare",
+  "message.basicstorage.station.connected_crate_count": "%d Lådor Kopplade",
+  "message.basicstorage.station.no_matching_crates": "Inga Liknande Lådor"
 }
