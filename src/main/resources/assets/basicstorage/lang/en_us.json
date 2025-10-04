@@ -7,5 +7,11 @@
   "block.basicstorage.crate_station": "Crate Station",
   "item.basicstorage.crate_hammer": "Crate Hammer",
   "message.basicstorage.station.connected_crate_count": "• %d Crates Connected •",
-  "message.basicstorage.station.no_matching_crates": "• No Matching Crates •"
+  "message.basicstorage.station.no_matching_crates": "• No Matching Crates •",
+  "subtitles.basicstorage.block.crate.handle_one": "Item inserts into Crate",
+  "subtitles.basicstorage.block.crate.handle_many": "Stack inserts into Crate",
+  "subtitles.basicstorage.block.crate.extract_one": "Item extracts from Crate",
+  "subtitles.basicstorage.block.crate.extract_many": "Stack extracts from Crate",
+  "subtitles.basicstorage.block.crate.handle_loads": "Stacks insert into Crate",
+  "subtitles.basicstorage.block.crate.no_match": "Station refuses item"
 }

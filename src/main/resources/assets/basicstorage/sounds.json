@@ -1,22 +1,38 @@
 {
+  "extract_one": {
+    "sounds": [
+      "basicstorage:handle_one"
+    ],
+    "subtitle": "subtitles.basicstorage.block.crate.extract_one"
+  },
+  "extract_many": {
+    "sounds": [
+      "basicstorage:handle_many"
+    ],
+    "subtitle": "subtitles.basicstorage.block.crate.extract_many"
+  },
   "handle_one": {
     "sounds": [
       "basicstorage:handle_one"
-    ]
+    ],
+    "subtitle": "subtitles.basicstorage.block.crate.handle_one"
   },
   "handle_many": {
     "sounds": [
       "basicstorage:handle_many"
-    ]
+    ],
+    "subtitle": "subtitles.basicstorage.block.crate.handle_many"
   },
   "handle_loads": {
     "sounds": [
       "basicstorage:handle_loads"
-    ]
+    ],
+    "subtitle": "subtitles.basicstorage.block.crate.handle_loads"
   },
   "no_match": {
     "sounds": [
       "basicstorage:no_match"
-    ]
+    ],
+    "subtitle": "subtitles.basicstorage.block.crate.no_match"
   }
 }

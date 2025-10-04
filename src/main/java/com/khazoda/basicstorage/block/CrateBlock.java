@@ -264,10 +264,10 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       t.commit();
 
       if (extracted == 1)
-        world.playSound(null, pos, SoundRegistry.HANDLE_ONE, SoundCategory.BLOCKS, 0.6f,
+        world.playSound(null, pos, SoundRegistry.EXTRACT_ONE, SoundCategory.BLOCKS, 0.6f,
             1.2f + ((-1 + random.nextFloat() * (1 + 1)) / 10));
       if (extracted > 1)
-        world.playSound(null, pos, SoundRegistry.HANDLE_ONE, SoundCategory.BLOCKS, 0.75f, 1f);
+        world.playSound(null, pos, SoundRegistry.EXTRACT_MANY, SoundCategory.BLOCKS, 0.75f, 1f);
       world.playSound(null, pos, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.BLOCKS, 0.35f, 1f);
 
     }
