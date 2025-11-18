@@ -1,0 +1,8 @@
+{
+  "block.basicstorage.crate": "Ящик",
+  "message.basicstorage.crate.empty": "Порожньо",
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "Станція ящиків",
+  "message.basicstorage.station.connected_crate_count": "• %d підключених ящиків •",
+  "message.basicstorage.station.no_matching_crates": "• Немає відповідних ящиків •"
+}

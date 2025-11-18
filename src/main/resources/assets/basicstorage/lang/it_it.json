@@ -1,0 +1,8 @@
+{
+  "block.basicstorage.crate": "Cassa",
+  "message.basicstorage.crate.empty": "Vuota",
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "Stazione casse",
+  "message.basicstorage.station.connected_crate_count": "• %d casse collegate •",
+  "message.basicstorage.station.no_matching_crates": "• Nessuna cassa corrispondente •"
+}

@@ -1,0 +1,8 @@
+{
+  "block.basicstorage.crate": "板条箱",
+  "message.basicstorage.crate.empty": "空",
+  "basicstorage.itemGroup": "基础存储",
+  "block.basicstorage.crate_station": "存储管理站",
+  "message.basicstorage.station.connected_crate_count": "• 已连接%d个板条箱 •",
+  "message.basicstorage.station.no_matching_crates": "• 未连接板条箱 •"
+}

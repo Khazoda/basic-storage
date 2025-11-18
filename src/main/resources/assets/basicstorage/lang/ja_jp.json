@@ -1,0 +1,8 @@
+{
+  "block.basicstorage.crate": "木箱",
+  "message.basicstorage.crate.empty": "空",
+  "basicstorage.itemGroup": "ベーシックストレージ",
+  "block.basicstorage.crate_station": "自動仕分けポイント",
+  "message.basicstorage.station.connected_crate_count": "• %d個の木箱が接続されています •",
+  "message.basicstorage.station.no_matching_crates": "• 一致する木箱がありません •"
+}

@@ -1,11 +1,8 @@
 {
   "block.basicstorage.crate": "Kiste",
   "message.basicstorage.crate.empty": "Leer",
-  "command.basicstorage.root": "Sie benutzen §6Basic Storage §r",
-  "command.basicstorage.wiki": "Besuchen Sie das Basic Storage Wiki",
   "basicstorage.itemGroup": "Basic Storage",
   "block.basicstorage.crate_station": "Kistenstation",
-  "item.basicstorage.crate_hammer": "Kistenhammer",
   "message.basicstorage.station.connected_crate_count": "• %d Kisten Verbunden •",
   "message.basicstorage.station.no_matching_crates": "• Keine Passenden Kisten •"
 }

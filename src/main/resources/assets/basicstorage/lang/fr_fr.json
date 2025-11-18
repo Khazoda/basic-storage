@@ -1,0 +1,8 @@
+{
+  "block.basicstorage.crate": "Caisse",
+  "message.basicstorage.crate.empty": "Vide",
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "Station de Caisse",
+  "message.basicstorage.station.connected_crate_count": "• %d Caisses Connectées •",
+  "message.basicstorage.station.no_matching_crates": "• Pas de Caisses Correspondantes •"
+}
