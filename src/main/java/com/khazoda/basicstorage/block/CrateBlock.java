@@ -1,5 +1,6 @@
 package com.khazoda.basicstorage.block;
 
+import com.khazoda.basicstorage.BasicStorageConfig;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.registry.BlockRegistry;
 import com.khazoda.basicstorage.registry.DataComponentRegistry;
@@ -25,6 +26,7 @@ import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -45,6 +47,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
@@ -66,10 +69,18 @@ import static java.lang.Math.toIntExact;
 public class CrateBlock extends Block implements BlockEntityProvider {
   public static final MapCodec<CrateBlock> CODEC = CrateBlock.createCodec(CrateBlock::new);
   public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
-  public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(2.5f)
-      .pistonBehavior(PistonBehavior.BLOCK).instrument(NoteBlockInstrument.BASS).mapColor(MapColor.OAK_TAN);
-
   private static Random random;
+  public static final Settings defaultSettings = getCrateSettings();
+
+  private static Block.Settings getCrateSettings() {
+    Block.Settings settings = Block.Settings.create()
+        .sounds(BlockSoundGroup.WOOD)
+        .pistonBehavior(PistonBehavior.BLOCK)
+        .instrument(NoteBlockInstrument.BASS)
+        .mapColor(MapColor.OAK_TAN)
+        .strength(1f);
+    return settings;
+  }
 
   public CrateBlock(Settings settings) {
     super(settings);
@@ -83,10 +94,22 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
   @Override
   public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer,
-                       ItemStack itemStack) {
+      ItemStack itemStack) {
     super.onPlaced(world, pos, state, placer, itemStack);
     notifyNearbyStations(world, pos);
     world.emitGameEvent(placer, GameEvent.BLOCK_PLACE, pos);
+  }
+
+  @Override
+  protected float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
+    if (BasicStorageConfig.getInstance().breakWithAxeOnly()) {
+      ItemStack mainHandStack = player.getMainHandStack();
+      if (mainHandStack.getItem() instanceof AxeItem) {
+        return super.calcBlockBreakingDelta(state, player, world, pos);
+      }
+      return 0.0f;
+    }
+    return super.calcBlockBreakingDelta(state, player, world, pos);
   }
 
   /**
@@ -171,7 +194,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
    * UseBlockCallback helper method
    **/
   private static int insertMaximum(PlayerEntity player, ItemStack playerStack, CrateSlot slot,
-                                   Transaction transaction) {
+      Transaction transaction) {
     /*
      * Insert as many items as possible from player's inventory if slot is empty, or
      * matches held stack
@@ -231,27 +254,17 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     }
   }
 
-  /**
-   * Method for removing either 1 item or a whole stack of items from a crate
-   */
-  @Override
-  protected void onBlockBreakStart(BlockState state, World world, BlockPos pos, PlayerEntity player) {
-    if (!player.canModifyBlocks())
-      return;
-
+  public static void extractFromCrate(World world, BlockPos pos, PlayerEntity player) {
+    if (!player.canModifyBlocks()) return;
     CrateBlockEntity cbe = (CrateBlockEntity) world.getBlockEntity(pos);
-    if (cbe == null)
-      return;
-    if (cbe.storage.isBlank())
-      return;
+    if (cbe == null || cbe.storage.isBlank()) return;
 
+    BlockState state = world.getBlockState(pos);
     var hit = BlockUtils.getHitResult(player, pos);
-    if (hit.getType() == HitResult.Type.MISS)
-      return;
+    if (hit.getType() == HitResult.Type.MISS) return;
 
     Direction facing = state.get(Properties.HORIZONTAL_FACING);
-    if (facing != hit.getSide())
-      return;
+    if (facing != hit.getSide()) return;
 
     try (var t = Transaction.openOuter()) {
       var item = cbe.storage.getResource();
@@ -269,7 +282,6 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       if (extracted > 1)
         world.playSound(null, pos, SoundRegistry.HANDLE_ONE, SoundCategory.BLOCKS, 0.75f, 1f);
       world.playSound(null, pos, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.BLOCKS, 0.35f, 1f);
-
     }
     cbe.refresh();
     state.updateNeighbors(world, pos, 1);
@@ -294,7 +306,8 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   }
 
   @Override
-  protected List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
+  protected List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder
+      builder) {
     return super.getDroppedStacks(state, builder);
   }
 
@@ -302,7 +315,8 @@ public class CrateBlock extends Block implements BlockEntityProvider {
    * Applies custom tooltip showing crate contents
    **/
   @Override
-  public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
+  public void appendTooltip(ItemStack stack, Item.TooltipContext
+      context, List<Text> tooltip, TooltipType options) {
     CrateSlotComponent contentsComponent = stack.get(DataComponentRegistry.CRATE_CONTENTS);
     if (contentsComponent == null)
       return;
@@ -343,7 +357,8 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   }
 
   @Override
-  protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+  protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState,
+      boolean moved) {
     if (state.isOf(newState.getBlock())) {
       return;
     }
