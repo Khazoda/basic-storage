@@ -27,9 +27,9 @@ public class CrateLootTableProvider extends FabricBlockLootTableProvider {
   }
 
   private LootTable.Builder drawerDrops(Block drop) {
-    return LootTable.builder().pool(addSurvivesExplosionCondition(drop, LootPool.builder().rolls(ConstantLootNumberProvider.create(1.0f))
-        .with(ItemEntry.builder(drop)
+    return LootTable.builder().pool(LootPool.builder()
+        .rolls(ConstantLootNumberProvider.create(1.0f)).with(ItemEntry.builder(drop)
             .apply(CopyComponentsLootFunction.builder(CopyComponentsLootFunction.Source.BLOCK_ENTITY)
-                .include(DataComponentRegistry.CRATE_CONTENTS)))));
+                .include(DataComponentRegistry.CRATE_CONTENTS))));
   }
 }

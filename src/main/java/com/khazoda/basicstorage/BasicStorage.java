@@ -40,6 +40,6 @@ public class BasicStorage implements ModInitializer {
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
 
-    BS_LOG.info("[Basic Storage] {}/7 registry crates filled!", loadedRegistries);
+    BS_LOG.info("[Basic Storage] {}/6 registry crates filled!", loadedRegistries);
   }
 }
