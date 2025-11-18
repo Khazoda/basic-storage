@@ -142,9 +142,9 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
         t.commit();
         if (inserted == 1)
-          world.playSound(null, pos, SoundRegistry.HANDLE_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-0.5f + random.nextFloat() * (1 + 0.5f)) / 10));
+          world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-0.5f + random.nextFloat() * (1 + 0.5f)) / 10));
         if (inserted > 1)
-          world.playSound(null, pos, SoundRegistry.HANDLE_MANY, SoundCategory.BLOCKS, 1f, 1f);
+          world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1f);
         state.updateNeighbors(world, pos, 1);
         cbe.refresh();
         world.updateComparators(pos, state.getBlock());
