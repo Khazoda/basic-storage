@@ -44,22 +44,5 @@ public class BasicStorageClient implements ClientModInitializer {
 //    ModelPredicateProviderRegistry.register(BlockRegistry.CRATE_BLOCK.asItem(), HAS_ITEMS_ID, HAS_ITEMS);
     BuiltinItemRendererRegistry.INSTANCE.register(BlockRegistry.CRATE_BLOCK, new CrateItemRenderer());
     ModelLoadingPlugin.register(new CrateItemRenderer());
-
-    /* Version Get & Wiki commands */
-    ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess)
-            -> dispatcher.register(ClientCommandManager.literal("basicstorage")
-            .executes(context -> {
-                  context.getSource().sendFeedback(Text.translatable("command.basicstorage.root").append(Text.literal(Constants.BS_VERSION).withColor(0x00FFFF)));
-                  return 1;
-                }
-            )
-            .then(ClientCommandManager.literal("wiki")
-                .executes(context -> {
-                  context.getSource().sendFeedback(Text.translatable("command.basicstorage.wiki").setStyle(Style.EMPTY.withColor(Formatting.BLUE).withUnderline(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modded.wiki/w/Mod:Basic_Storage"))));
-                  return 1;
-                })
-            )
-        )
-    );
   }
 }

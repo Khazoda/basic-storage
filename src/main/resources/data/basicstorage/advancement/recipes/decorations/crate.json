@@ -38,8 +38,7 @@
   "rewards": {
     "recipes": [
       "basicstorage:crate",
-      "basicstorage:crate_station",
-      "basicstorage:crate_hammer"
+      "basicstorage:crate_station"
     ]
   }
 }
