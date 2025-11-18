@@ -4,5 +4,11 @@
   "basicstorage.itemGroup": "Basic Storage",
   "block.basicstorage.crate_station": "Crate Station",
   "message.basicstorage.station.connected_crate_count": "• %d Crates Connected •",
-  "message.basicstorage.station.no_matching_crates": "• No Matching Crates •"
+  "message.basicstorage.station.no_matching_crates": "• No Matching Crates •",
+  "subtitles.basicstorage.block.crate.insert_one": "Item is added to Crate",
+  "subtitles.basicstorage.block.crate.insert_many": "Stack is added to Crate",
+  "subtitles.basicstorage.block.crate.insert_loads": "Stacks are added to Crate",
+  "subtitles.basicstorage.block.crate.extract_one": "Item is extracted from Crate",
+  "subtitles.basicstorage.block.crate.extract_many": "Stack is extracted from Crate",
+  "subtitles.basicstorage.block.crate.no_match": "Station refuses item"
 }

@@ -8,9 +8,11 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 
 public class SoundRegistry {
-  public static final SoundEvent HANDLE_ONE = register("handle_one");
-  public static final SoundEvent HANDLE_MANY = register("handle_many");
-  public static final SoundEvent HANDLE_LOADS = register("handle_loads");
+  public static final SoundEvent EXTRACT_ONE = register("extract_one");
+  public static final SoundEvent EXTRACT_MANY = register("extract_many");
+  public static final SoundEvent INSERT_ONE = register("insert_one");
+  public static final SoundEvent INSERT_MANY = register("insert_many");
+  public static final SoundEvent INSERT_LOADS = register("insert_loads");
   public static final SoundEvent NO_MATCH = register("no_match");
 
   public static void init() {
