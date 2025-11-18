@@ -69,6 +69,9 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
         return ActionResult.PASS;
       if (!player.canModifyBlocks() || player.isSpectator())
         return ActionResult.PASS;
+      if(player.getStackInHand(hand).isOf(BlockRegistry.CRATE_BLOCK.asItem()) && player.isSneaking()) {
+        return ActionResult.PASS;
+      }
 
       BlockPos pos = hit.getBlockPos();
       BlockState state = world.getBlockState(pos);
