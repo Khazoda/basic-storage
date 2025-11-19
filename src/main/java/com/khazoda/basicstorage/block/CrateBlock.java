@@ -21,6 +21,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.NoteBlockInstrument;
+import net.minecraft.block.enums.Orientation;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
@@ -37,7 +38,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -67,7 +68,7 @@ import static java.lang.Math.toIntExact;
  */
 public class CrateBlock extends Block implements BlockEntityProvider {
   public static final MapCodec<CrateBlock> CODEC = CrateBlock.createCodec(CrateBlock::new);
-  public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+  public static final EnumProperty<Orientation> ORIENTATION = Properties.ORIENTATION;
   private static Random random;
   public static final Settings defaultSettings = getCrateSettings();
 
@@ -84,7 +85,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   public CrateBlock(Settings settings) {
     super(settings);
     random = new Random();
-    setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.NORTH));
+    setDefaultState(this.stateManager.getDefaultState().with(ORIENTATION, Orientation.NORTH_UP));
   }
 
   public CrateBlock() {
@@ -129,7 +130,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       BlockPos pos = hit.getBlockPos();
       BlockState state = world.getBlockState(pos);
       BlockEntity be = world.getBlockEntity(pos);
-      Direction facing = state.get(Properties.HORIZONTAL_FACING);
+      Direction facing = state.get(Properties.ORIENTATION).getFacing();
 
       if (be == null)
         return ActionResult.PASS;
@@ -260,7 +261,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     var hit = BlockUtils.getHitResult(player, pos);
     if (hit.getType() == HitResult.Type.MISS) return;
 
-    Direction facing = state.get(Properties.HORIZONTAL_FACING);
+    Direction facing = state.get(Properties.ORIENTATION).getFacing();
     if (facing != hit.getSide()) return;
 
     try (var t = Transaction.openOuter()) {
@@ -328,12 +329,12 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   }
 
   public static Direction getFront(BlockState state) {
-    return state.get(FACING);
+    return state.get(ORIENTATION).getFacing();
   }
 
   @Override
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    builder.add(FACING);
+    builder.add(ORIENTATION);
   }
 
   @Override
@@ -350,7 +351,19 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   @Nullable
   @Override
   public BlockState getPlacementState(ItemPlacementContext ctx) {
-    return this.getDefaultState().with(Properties.HORIZONTAL_FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    Direction facing = ctx.getPlayerLookDirection().getOpposite();
+    Direction rotation;
+
+    if (facing.getAxis().isVertical()) {
+      rotation = ctx.getHorizontalPlayerFacing();
+      if (facing == Direction.DOWN) {
+        rotation = rotation.getOpposite();
+      }
+    } else {
+      rotation = Direction.UP;
+    }
+
+    return this.getDefaultState().with(Properties.ORIENTATION, Orientation.byDirections(facing, rotation));
   }
 
   @Override
@@ -370,12 +383,18 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
   @Override
   protected BlockState rotate(BlockState state, BlockRotation rotation) {
-    return state.with(FACING, rotation.rotate(state.get(FACING)));
+    Orientation current = state.get(ORIENTATION);
+    Direction newFacing = rotation.rotate(current.getFacing());
+    Direction newRotation = rotation.rotate(current.getRotation());
+    return state.with(ORIENTATION, Orientation.byDirections(newFacing, newRotation));
   }
 
   @Override
   protected BlockState mirror(BlockState state, BlockMirror mirror) {
-    return state.rotate(mirror.getRotation(state.get(FACING)));
+    Orientation current = state.get(ORIENTATION);
+    Direction newFacing = mirror.apply(current.getFacing());
+    Direction newRotation = mirror.apply(current.getRotation());
+    return state.with(ORIENTATION, Orientation.byDirections(newFacing, newRotation));
   }
 
   @Override

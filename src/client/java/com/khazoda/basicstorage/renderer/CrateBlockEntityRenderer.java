@@ -7,6 +7,7 @@ import com.khazoda.basicstorage.util.NumberFormatter;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.enums.Orientation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.DiffuseLighting;
@@ -44,22 +45,62 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 
   @Override
   public void render(CrateBlockEntity be, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-    var horizontalDir = be.getCachedState().get(CrateBlock.FACING);
-    var dir = CrateBlock.getFront(be.getCachedState());
+    Orientation orientation = be.getCachedState().get(CrateBlock.ORIENTATION);
+    Direction dir = orientation.getFacing();
+
     var world = be.getWorld();
-
-    ItemVariant itemVariant = be.storage.getResource();
-    String itemCount = String.valueOf(be.storage.getAmount());
     BlockPos pos = be.getPos();
-
     if (!shouldRenderBE(be, dir)) return;
-
     matrices.push();
-    alignMatrices(matrices, horizontalDir);
+    alignMatricesToOrientation(matrices, orientation);
 
     light = WorldRenderer.getLightmapCoordinates(Objects.requireNonNull(be.getWorld()), pos.offset(dir));
+    ItemVariant itemVariant = be.storage.getResource();
+    String itemCount = String.valueOf(be.storage.getAmount());
     renderCrateInfo(itemVariant, itemCount, matrices, vertexConsumers, light, (int) pos.asLong(), pos, world);
     matrices.pop();
+  }
+
+  protected void alignMatricesToOrientation(MatrixStack matrices, Orientation orientation) {
+    matrices.translate(0.5, 0.5, 0.5);
+    switch (orientation) {
+      case NORTH_UP -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
+      case SOUTH_UP -> {}
+      case EAST_UP  -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
+      case WEST_UP  -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
+      case UP_NORTH -> {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(0));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
+      }
+      case UP_EAST -> {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
+      }
+      case UP_SOUTH -> {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
+      }
+      case UP_WEST -> {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
+      }
+      case DOWN_NORTH -> {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+      }
+      case DOWN_EAST -> {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+      }
+      case DOWN_SOUTH -> {
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+      }
+      case DOWN_WEST -> {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+      }
+    }
+    matrices.translate(0, 0, 0.51);
   }
 
   public void renderCrateInfo(ItemVariant item, @Nullable String amount, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed, BlockPos pos, World world) {
