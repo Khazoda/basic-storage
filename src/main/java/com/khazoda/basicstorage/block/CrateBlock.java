@@ -1,6 +1,7 @@
 package com.khazoda.basicstorage.block;
 
 import com.khazoda.basicstorage.BasicStorageConfig;
+import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.registry.BlockRegistry;
 import com.khazoda.basicstorage.registry.DataComponentRegistry;
@@ -68,6 +69,7 @@ import static java.lang.Math.toIntExact;
  */
 public class CrateBlock extends Block implements BlockEntityProvider {
   public static final MapCodec<CrateBlock> CODEC = CrateBlock.createCodec(CrateBlock::new);
+  public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING; //Todo: remove after migration period
   public static final EnumProperty<Orientation> ORIENTATION = Properties.ORIENTATION;
   private static Random random;
   public static final Settings defaultSettings = getCrateSettings();
@@ -85,7 +87,9 @@ public class CrateBlock extends Block implements BlockEntityProvider {
   public CrateBlock(Settings settings) {
     super(settings);
     random = new Random();
-    setDefaultState(this.stateManager.getDefaultState().with(ORIENTATION, Orientation.NORTH_UP));
+    setDefaultState(this.stateManager.getDefaultState()
+        .with(ORIENTATION, Orientation.NORTH_UP)
+        .with(HORIZONTAL_FACING, Direction.NORTH));
   }
 
   public CrateBlock() {
@@ -129,6 +133,14 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
       BlockPos pos = hit.getBlockPos();
       BlockState state = world.getBlockState(pos);
+
+      /* Todo: remove block after migration period */
+      if (!world.isClient) {
+        fixLegacyState(state, world, pos);
+        // Refresh the state variable to ensure method uses corrected data
+        state = world.getBlockState(pos);
+      }
+
       BlockEntity be = world.getBlockEntity(pos);
       Direction facing = state.get(Properties.ORIENTATION).getFacing();
 
@@ -334,7 +346,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
   @Override
   protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-    builder.add(ORIENTATION);
+    builder.add(ORIENTATION, HORIZONTAL_FACING);
   }
 
   @Override
@@ -363,7 +375,15 @@ public class CrateBlock extends Block implements BlockEntityProvider {
       rotation = Direction.UP;
     }
 
-    return this.getDefaultState().with(Properties.ORIENTATION, Orientation.byDirections(facing, rotation));
+    /* Todo: remove block after migration period */
+    Direction legacyFacing = facing;
+    if (facing.getAxis().isVertical()) {
+      legacyFacing = ctx.getHorizontalPlayerFacing().getOpposite();
+    }
+
+    return this.getDefaultState()
+        .with(Properties.ORIENTATION, Orientation.byDirections(facing, rotation))
+        .with(Properties.HORIZONTAL_FACING, legacyFacing); //Todo: remove after migration period
   }
 
   @Override
@@ -380,6 +400,32 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     }
     super.onStateReplaced(state, world, pos, newState, moved);
   }
+
+  /* Todo: remove this method after migration period */
+  @Override
+  public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+    if (!world.isClient) {
+      fixLegacyState(state, world, pos);
+    }
+    super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+  }
+  /* Todo: remove this method after migration period */
+  private static void fixLegacyState(BlockState state, World world, BlockPos pos) {
+    Orientation currentOrientation = state.get(ORIENTATION);
+    Direction legacyFacing = state.get(HORIZONTAL_FACING);
+    if (currentOrientation != Orientation.NORTH_UP) {
+      return;
+    }
+    if (legacyFacing != Direction.NORTH) {
+      Constants.BS_LOG.warn("[Crate Migration] Fixing block at {}. Legacy says '{}', but Orientation was Default.", pos, legacyFacing);
+      Orientation fixedOrientation = Orientation.byDirections(legacyFacing, Direction.UP);
+      BlockState fixedState = state.with(ORIENTATION, fixedOrientation);
+      world.setBlockState(pos, fixedState, Block.NOTIFY_ALL);
+
+      Constants.BS_LOG.info("[Crate Migration] FIXED {}: Rotated to '{}'", pos, fixedOrientation);
+    }
+  }
+
 
   @Override
   protected BlockState rotate(BlockState state, BlockRotation rotation) {
