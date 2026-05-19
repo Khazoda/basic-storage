@@ -4,7 +4,9 @@ import com.khazoda.basicstorage.BasicStorage;
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.block.entity.CrateStationBlockEntity;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -22,7 +24,7 @@ public class BlockEntityRegistry {
 
 
 	public static void init() {
-		/* Lets crates work with hoppers and other item transfer */
+		/* Lets crates work with hoppers and other item transfer blocks */
 		ItemStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.storage, CRATE_BLOCK_ENTITY);
 
 		BasicStorage.loadedRegistries += 1;

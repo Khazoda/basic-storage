@@ -2,12 +2,13 @@ package com.khazoda.basicstorage.storage;
 
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
-import com.khazoda.basicstorage.structure.CrateSlotComponent;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.ResourceAmount;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
+
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
@@ -30,17 +31,6 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 	@Override
 	public CrateBlockEntity getOwner() {
 		return owner;
-	}
-
-	public void readComponent(CrateSlotComponent component) {
-		item = component.item();
-		count = component.count();
-
-		if (item.isBlank()) count = 0;
-	}
-
-	public CrateSlotComponent toComponent() {
-		return new CrateSlotComponent(item, count);
 	}
 
 	@Override
@@ -125,9 +115,15 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 	}
 
 	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-		item = ItemVariant.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, registryLookup), nbt.getCompound("item")).getOrThrow();
-		count = (int) nbt.getLong("count");
-		if (item.isBlank()) count = 0;
+		item = ItemVariant.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, registryLookup), nbt.getCompound("item")).result().orElse(ItemVariant.blank());
+
+		long savedCount = nbt.getLong("count");
+		count = Math.clamp(savedCount, 0, Constants.CRATE_MAX_COUNT);
+
+		if (item.isBlank() || count == 0) {
+			item = ItemVariant.blank();
+			count = 0;
+		}
 	}
 
 	public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {

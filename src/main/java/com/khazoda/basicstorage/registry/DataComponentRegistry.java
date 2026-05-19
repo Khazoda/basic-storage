@@ -3,6 +3,7 @@ package com.khazoda.basicstorage.registry;
 import com.khazoda.basicstorage.BasicStorage;
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
+
 import net.minecraft.component.ComponentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;

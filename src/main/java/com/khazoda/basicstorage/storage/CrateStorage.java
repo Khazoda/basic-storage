@@ -1,6 +1,7 @@
 package com.khazoda.basicstorage.storage;
 
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 

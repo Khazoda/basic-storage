@@ -30,7 +30,7 @@ public class BasicStorage implements ModInitializer {
 			ServerPlayNetworking.send(handler.getPlayer(), new ConfigSyncPayload(serverConfigValue));
 		});
 		BasicStorageConfig.getInstance().load();
-		Registry.register(Registries.ITEM_GROUP, Identifier.of(Constants.BS_NAMESPACE), BW_ITEMGROUP);
+		Registry.register(Registries.ITEM_GROUP, Identifier.of(Constants.BS_NAMESPACE, "main"), BW_ITEMGROUP);
 		BlockRegistry.init();
 		BlockEntityRegistry.init();
 		SoundRegistry.init();

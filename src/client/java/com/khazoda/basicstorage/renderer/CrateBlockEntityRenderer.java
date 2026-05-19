@@ -31,7 +31,6 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -51,6 +50,8 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 
 	@Override
 	public void render(CrateBlockEntity be, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+		if (be.storage.isBlank()) return;
+
 		Orientation orientation = be.getCachedState().get(CrateBlock.ORIENTATION);
 		Direction dir = orientation.getFacing();
 
@@ -125,7 +126,6 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		}
 	}
 
-	@SuppressWarnings("UnreachableCode")
 	public void renderItem(ItemVariant item, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int seed) {
 		if (item.isBlank()) return;
 
@@ -133,7 +133,7 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		matrices.translate(0f, 0.125f, 0f);
 		matrices.scale(0.5f, 0.5f, 0.5f);
 		matrices.scale(0.75f, 0.75f, 1);
-		matrices.peek().getPositionMatrix().mul(new Matrix4f().scale(1, 1, 0.01f));
+		matrices.scale(1f, 1f, 0.01f);
 
 		ItemStack stack = item.toStack();
 		BakedModel model = itemRenderer.getModel(stack, world, null, seed);
@@ -171,10 +171,10 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		matrices.pop();
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public final boolean shouldRenderBE(BlockEntity be, Direction facing) {
 		World world = be.getWorld();
 		if (world == null) return false;
+
 		BlockPos pos = be.getPos();
 		BlockState state = be.getCachedState();
 

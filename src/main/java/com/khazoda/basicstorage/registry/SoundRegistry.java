@@ -2,6 +2,7 @@ package com.khazoda.basicstorage.registry;
 
 import com.khazoda.basicstorage.BasicStorage;
 import com.khazoda.basicstorage.Constants;
+
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundEvent;

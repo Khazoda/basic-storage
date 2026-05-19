@@ -33,7 +33,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
@@ -111,14 +110,10 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 	}
 
 	/**
-	 * Event hook instead of onUse() method in order to capture interactions while
-	 * sneaking
+	 * Event hook instead of onUse() method in order to capture interactions while sneaking
 	 */
 	public static void initOnUseMethod() {
-		/*
-		 * Method is fired on every block right click, so immediate check for crate
-		 * block class is needed
-		 */
+		//Method is fired on every block right click, so immediate check for crate block class is needed
 		UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hit) -> {
 			if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_BLOCK)) return ActionResult.PASS;
 			if (!player.canModifyBlocks() || player.isSpectator()) return ActionResult.PASS;
@@ -128,6 +123,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
 			if (!(world.getBlockEntity(pos) instanceof CrateBlockEntity cbe)) return ActionResult.PASS;
 			if (state.get(Properties.ORIENTATION).getFacing() != hit.getSide()) return ActionResult.PASS;
+
 			if (world.isClient()) return ActionResult.SUCCESS;
 
 			ItemStack playerStack = player.getStackInHand(hand);
@@ -135,27 +131,21 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 			boolean hadHeldItem = !playerStack.isEmpty();
 
 			CrateSlot slot = cbe.storage;
+			boolean insertingMultiple = player.isSneaking();
 
-			//if (playerStack.isOf(Items.DEBUG_STICK)) return debugInitOnUseMethod(player, slot); TODO: Enable for debugging
+			if (!canInsert(playerStack, slot, insertingMultiple)) return listExactContents(player, slot);
 
-			try (var t = Transaction.openOuter()) {
-				int inserted = 0;
-				if (player.isSneaking()) {
-					if (!canInsert(playerStack, slot, true)) return listExactContents(player, slot);
-					inserted = insertMaximum(player, playerStack, slot, t);
-				} else if (!player.isSneaking()) {
-					if (!canInsert(playerStack, slot, false)) return listExactContents(player, slot);
-					inserted = insertOne(playerStack, slot, t);
-				}
+			try (var transaction = Transaction.openOuter()) {
+				int inserted = insertingMultiple ? insertMaximum(player, playerStack, slot, transaction) : insertOne(playerStack, slot, transaction);
 
 				if (inserted == 0) {
-					t.abort();
+					transaction.abort();
 					return ActionResult.CONSUME_PARTIAL;
 				}
 
-				t.commit();
+				transaction.commit();
 
-				if (inserted == 1) world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-0.5f + random.nextFloat() * (1 + 0.5f)) / 10));
+				if (inserted == 1) world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-0.5f + random.nextFloat() * 1.5f) / 10));
 				if (inserted > 1) world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1f);
 
 				state.updateNeighbors(world, pos, Block.NOTIFY_LISTENERS);
@@ -175,7 +165,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 	private static int insertOne(ItemStack playerStack, CrateSlot slot, Transaction t) {
 		/* Insert one item into crate, if matching player's active held stack */
 		if (playerStack.isEmpty()) return 0;
-		int inserted = (int) slot.insert(ItemVariant.of(playerStack), 1, t);
+		int inserted = (int)slot.insert(ItemVariant.of(playerStack), 1, t);
 		playerStack.decrement(inserted);
 		return inserted;
 	}
@@ -193,12 +183,12 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 			return 0;
 		} else if (slot.isBlank() && !playerStack.isEmpty()) {
 			/* Insert into empty crate */
-			int i = (int) slot.insert(ItemVariant.of(playerStack), playerStack.getCount(), transaction);
+			int i = (int)slot.insert(ItemVariant.of(playerStack), playerStack.getCount(), transaction);
 			playerStack.decrement(i);
 			return i;
 		} else {
 			/* Insert into crate with items */
-			return (int) StorageUtil.move(PlayerInventoryStorage.of(player), slot, itemVariant -> true, Integer.MAX_VALUE, transaction);
+			return (int)StorageUtil.move(PlayerInventoryStorage.of(player), slot, itemVariant -> true, Integer.MAX_VALUE, transaction);
 		}
 	}
 
@@ -220,14 +210,13 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 	/**
 	 * UseBlockCallback helper method
 	 **/
-	/* Add blacklisted items to this method */
-	/* Stop them being inserted into crates */
+	// Add blacklisted items to this method
+	// Stop them being inserted into crates
 	public static boolean canInsert(ItemStack stack, CrateSlot slot, boolean insertingMultiple) {
 		if (insertingMultiple) {
-			return !slot.isBlank() || canInsert(stack, slot, false); // Prevents stacked undesirables from being insertable
-			// when sneaking
-			// This is ok as another check is done when actually inserting the items in
-			// CrateSlot#insert
+			return !slot.isBlank() || canInsert(stack, slot, false);
+			// Prevents stacked undesirables from being insertable when sneaking
+			// This is ok as another check is done when actually inserting the items in CrateSlot#insert
 		} else {
 			if (stack.isEmpty()) return false;
 			if (stack.isDamaged()) return false;
@@ -275,14 +264,10 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 		BlockEntity be = world.getBlockEntity(pos);
 		if (be instanceof CrateBlockEntity cbe) {
 			if (!world.isClient() && player.isCreative() && !cbe.storage.getResource().toStack().isEmpty())
-				getDroppedStacks(state, (ServerWorld) world, pos, cbe, player, player.getStackInHand(Hand.MAIN_HAND)).forEach(stack -> ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), stack));
+				getDroppedStacks(state, (ServerWorld) world, pos, cbe, player, player.getStackInHand(Hand.MAIN_HAND))
+						.forEach(stack -> ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), stack));
 		}
 		return super.onBreak(world, pos, state, player);
-	}
-
-	@Override
-	protected List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
-		return super.getDroppedStacks(state, builder);
 	}
 
 	/**

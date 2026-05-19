@@ -42,6 +42,8 @@ public class CrateBlockEntity extends BlockEntity {
 	 **/
 	@Override
 	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+		super.writeNbt(nbt, registryLookup);
+
 		var storageNbt = new NbtCompound();
 		storage.writeNbt(storageNbt, registryLookup);
 		nbt.put("crateStack", storageNbt);
@@ -75,16 +77,18 @@ public class CrateBlockEntity extends BlockEntity {
 	 */
 	@Override
 	protected void addComponents(ComponentMap.Builder componentMapBuilder) {
+		super.addComponents(componentMapBuilder);
 		if (this.storage.isBlank()) return;
 		componentMapBuilder.add(DataComponentRegistry.CRATE_CONTENTS, new CrateSlotComponent(this.storage.getResource(), (int) this.storage.getAmount()));
 	}
 
 	@Override
 	protected void readComponents(BlockEntity.ComponentsAccess components) {
+		super.readComponents(components);
 		CrateSlotComponent contents = components.getOrDefault(DataComponentRegistry.CRATE_CONTENTS, CrateSlotComponent.DEFAULT);
-		if (contents == null || contents.count() == 0) return;
+		if (contents.count() <= 0 || contents.item().isBlank()) return;
 		try (Transaction t = Transaction.openOuter()) {
-			if (!this.storage.isBlank()) return; // Prevents creative block pick from duping items
+			if (!this.storage.isBlank()) return;
 			this.storage.insert(contents.item(), contents.count(), t);
 			t.commit();
 		}

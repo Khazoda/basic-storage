@@ -42,6 +42,7 @@ public class ServerPlayerInteractionManagerMixin {
 				this.basicStorage$targetPos = null;
 			}
 		}
+
 		if (action == PlayerActionC2SPacket.Action.ABORT_DESTROY_BLOCK) {
 			if (this.basicStorage$targetPos != null && this.basicStorage$targetPos.equals(pos)) {
 				int duration = this.tickCounter - this.basicStorage$startTick;
@@ -49,6 +50,13 @@ public class ServerPlayerInteractionManagerMixin {
 				if (state.getBlock() instanceof CrateBlock) {
 					if (duration <= 3) CrateBlock.extractFromCrate(this.world, pos, this.player);
 				}
+				this.basicStorage$targetPos = null;
+				this.basicStorage$startTick = -1;
+			}
+		}
+
+		if (action == PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK) {
+			if (this.basicStorage$targetPos != null && this.basicStorage$targetPos.equals(pos)) {
 				this.basicStorage$targetPos = null;
 				this.basicStorage$startTick = -1;
 			}

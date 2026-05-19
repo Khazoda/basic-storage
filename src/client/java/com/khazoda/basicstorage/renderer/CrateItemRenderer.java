@@ -33,7 +33,7 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
 	@Override
 	public void render(ItemStack stack, ModelTransformationMode mode, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay) {
-		var client = MinecraftClient.getInstance();
+		MinecraftClient client = MinecraftClient.getInstance();
 		ItemRenderer itemRenderer = client.getItemRenderer();
 
 		BakedModelManager modelManager = client.getBakedModelManager();
@@ -63,15 +63,15 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 		matrices.pop();
 	}
 
-	@SuppressWarnings("UnreachableCode")
 	private void renderCrateContents(ItemRenderer itemRenderer, ItemVariant item, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumers) {
 		if (item.isBlank()) return;
 
 		matrices.push();
 		matrices.translate(0.5f, 0.5f, 1f);
 		matrices.scale(0.7f, 0.7f, 1f);
-		var stack = item.toStack();
-		var model = itemRenderer.getModel(stack, null, null, 0);
+
+		ItemStack stack = item.toStack();
+		BakedModel model = itemRenderer.getModel(stack, null, null, 0);
 
 		Vector3f[] shaderLights = RenderSystemAccessor.getShaderLightDirections();
 		Vector3f oldLight0 = shaderLights[0];
