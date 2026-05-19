@@ -21,6 +21,7 @@ public class SoundRegistry {
 	}
 
 	private static SoundEvent register(String name) {
-		return Registry.register(Registries.SOUND_EVENT, name, SoundEvent.of(Identifier.of(Constants.BS_NAMESPACE, name)));
+		Identifier id = Identifier.of(Constants.BS_NAMESPACE, name);
+		return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
 	}
 }

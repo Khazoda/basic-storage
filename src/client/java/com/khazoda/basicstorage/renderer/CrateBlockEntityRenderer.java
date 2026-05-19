@@ -34,8 +34,6 @@ import net.minecraft.world.World;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.Objects;
-
 public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockEntity> {
 	private static final Quaternionf ITEM_LIGHT_ROTATION_3D = RotationAxis.POSITIVE_X.rotationDegrees(-15).mul(RotationAxis.POSITIVE_Y.rotationDegrees(15));
 	private static final Quaternionf ITEM_LIGHT_ROTATION_FLAT = RotationAxis.POSITIVE_X.rotationDegrees(-45);
@@ -56,12 +54,16 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		Direction dir = orientation.getFacing();
 
 		World world = be.getWorld();
+		if (world == null) return;
+
 		BlockPos pos = be.getPos();
 		if (!shouldRenderBE(be, dir)) return;
+
 		matrices.push();
 		alignMatricesToOrientation(matrices, orientation);
 
-		renderCrateInfo(be.storage.getResource(), (int)be.storage.getAmount(), matrices, vertexConsumers, WorldRenderer.getLightmapCoordinates(Objects.requireNonNull(be.getWorld()), pos.offset(dir)), (int)pos.asLong(), pos, world);
+		renderCrateInfo(be.storage.getResource(), (int)be.storage.getAmount(), matrices, vertexConsumers, WorldRenderer.getLightmapCoordinates(world, pos.offset(dir)), (int)pos.asLong(), pos, world);
+
 		matrices.pop();
 	}
 

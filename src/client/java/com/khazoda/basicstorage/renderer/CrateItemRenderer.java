@@ -3,6 +3,7 @@ package com.khazoda.basicstorage.renderer;
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.mixin.RenderSystemAccessor;
 import com.khazoda.basicstorage.registry.DataComponentRegistry;
+import com.khazoda.basicstorage.structure.CrateSlotComponent;
 
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
@@ -24,8 +25,6 @@ import net.minecraft.util.math.RotationAxis;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.Objects;
-
 public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicItemRenderer, ModelLoadingPlugin {
 	public static final Identifier CRATE_ID = Identifier.of(Constants.BS_NAMESPACE, "block/crate");
 	private static final Quaternionf ITEM_LIGHT_ROTATION_3D = RotationAxis.POSITIVE_X.rotationDegrees(-15).mul(RotationAxis.POSITIVE_Y.rotationDegrees(15));
@@ -39,27 +38,18 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 		BakedModelManager modelManager = client.getBakedModelManager();
 		BakedModel crateModel = modelManager.getModel(CRATE_ID);
 
-		if (!mode.equals(ModelTransformationMode.GUI) || !stack.contains(DataComponentRegistry.CRATE_CONTENTS)) {
-			// Render crate crateModel normally
-			renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, false);
-		} else {
-			// Render create crateModel in GUI with extra information
-			if (stack.contains(DataComponentRegistry.CRATE_CONTENTS)) {
-				renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, true);
-				ItemVariant item = Objects.requireNonNull(stack.get(DataComponentRegistry.CRATE_CONTENTS)).item();
-				renderCrateContents(itemRenderer, item, light, matrices, vertexConsumerProvider);
-			}
-		}
+		CrateSlotComponent contents = stack.get(DataComponentRegistry.CRATE_CONTENTS);
+		boolean renderContents = mode == ModelTransformationMode.GUI && contents != null;
+
+		renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, renderContents);
+
+		if (renderContents) renderCrateContents(itemRenderer, contents.item(), light, matrices, vertexConsumerProvider);
 	}
 
 	private void renderCrate(ItemStack stack, ModelTransformationMode mode, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay, ItemRenderer itemRenderer, BakedModel crateModel, boolean hasContents) {
 		matrices.push();
 		matrices.translate(.5, .5, .5);
-		if (hasContents) {
-			itemRenderer.renderItem(stack, mode, false, matrices, vertexConsumerProvider, Math.round(light / 1.5f), overlay, crateModel);
-		} else {
-			itemRenderer.renderItem(stack, mode, false, matrices, vertexConsumerProvider, light, overlay, crateModel);
-		}
+		itemRenderer.renderItem(stack, mode, false, matrices, vertexConsumerProvider, light, overlay, crateModel);
 		matrices.pop();
 	}
 
