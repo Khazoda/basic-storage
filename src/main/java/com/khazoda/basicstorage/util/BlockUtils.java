@@ -3,7 +3,6 @@ package com.khazoda.basicstorage.util;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
@@ -19,6 +18,7 @@ public class BlockUtils {
 	}
 
 	public static int getComparatorOutputStrength(int itemStackCount) {
-		return MathHelper.floor(itemStackCount % 16);
+		if (itemStackCount <= 0) return 0;
+		return ((itemStackCount - 1) % 15) + 1;
 	}
 }

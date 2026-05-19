@@ -60,7 +60,6 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 		} else {
 			itemRenderer.renderItem(stack, mode, false, matrices, vertexConsumerProvider, light, overlay, crateModel);
 		}
-		crateModel.getTransformation().getTransformation(mode).apply(false, matrices);
 		matrices.pop();
 	}
 

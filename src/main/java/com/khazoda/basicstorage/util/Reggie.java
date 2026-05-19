@@ -1,6 +1,7 @@
 package com.khazoda.basicstorage.util;
 
 import com.khazoda.basicstorage.Constants;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.BlockItem;

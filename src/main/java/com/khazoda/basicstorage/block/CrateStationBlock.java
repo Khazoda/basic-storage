@@ -33,7 +33,6 @@ import net.minecraft.world.event.GameEvent;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.khazoda.basicstorage.storage.CrateStationHelper.notifyNearbyStations;
@@ -128,7 +127,7 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 		World world = cdbe.getWorld();
 		if (world == null) return 0;
 
-		for (BlockPos cratePos : new ArrayList<>(compatibleCrates)) {
+		for (BlockPos cratePos : compatibleCrates) {
 			BlockEntity be = world.getBlockEntity(cratePos);
 			if (!(be instanceof CrateBlockEntity crate)) {
 				cdbe.markCacheForUpdate();

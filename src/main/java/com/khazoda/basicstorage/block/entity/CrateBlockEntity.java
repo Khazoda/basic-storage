@@ -88,6 +88,5 @@ public class CrateBlockEntity extends BlockEntity {
 			this.storage.insert(contents.item(), contents.count(), t);
 			t.commit();
 		}
-		this.refresh();
 	}
 }

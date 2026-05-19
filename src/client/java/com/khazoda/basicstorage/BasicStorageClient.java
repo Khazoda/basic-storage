@@ -26,20 +26,19 @@ public class BasicStorageClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		/* Load server's config */
-		ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPayload.ID, (payload, context) -> {
-			context.client().execute(() -> {
-				BasicStorageConfig.getInstance().setBreakWithAxeOnly(payload.breakWithAxeOnly());
-				Constants.BS_LOG.info("Synced config from server: Axe Only = {}", payload.breakWithAxeOnly());
-			});
-		});
+		ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPayload.ID, (payload, context) -> context.client().execute(() -> {
+			BasicStorageConfig.getInstance().setBreakWithAxeOnly(payload.breakWithAxeOnly());
+			Constants.BS_LOG.info("Synced config from server: Axe Only = {}", payload.breakWithAxeOnly());
+		}));
+
 		/* Revert to client's config */
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-			BasicStorageConfig.getInstance().load();
-		});
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> BasicStorageConfig.getInstance().load());
 
 		BlockEntityRendererFactories.register(BlockEntityRegistry.CRATE_BLOCK_ENTITY, CrateBlockEntityRenderer::new);
-//    ModelPredicateProviderRegistry.register(BlockRegistry.CRATE_BLOCK.asItem(), HAS_ITEMS_ID, HAS_ITEMS);
-		BuiltinItemRendererRegistry.INSTANCE.register(BlockRegistry.CRATE_BLOCK, new CrateItemRenderer());
-		ModelLoadingPlugin.register(new CrateItemRenderer());
+		//ModelPredicateProviderRegistry.register(BlockRegistry.CRATE_BLOCK.asItem(), HAS_ITEMS_ID, HAS_ITEMS);
+		CrateItemRenderer crateItemRenderer = new CrateItemRenderer();
+
+		BuiltinItemRendererRegistry.INSTANCE.register(BlockRegistry.CRATE_BLOCK, crateItemRenderer);
+		ModelLoadingPlugin.register(crateItemRenderer);
 	}
 }

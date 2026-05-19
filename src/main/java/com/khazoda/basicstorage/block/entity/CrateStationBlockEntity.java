@@ -29,31 +29,36 @@ public class CrateStationBlockEntity extends BlockEntity {
 		connectedCrates.clear();
 
 		Queue<BlockPos> toExplore = new ArrayDeque<>();
-		Set<BlockPos> visited = new HashSet<>();
+		Set<BlockPos> queued = new HashSet<>();
+
 		toExplore.add(pos);
+		queued.add(pos);
 
 		while (!toExplore.isEmpty()) {
 			BlockPos current = toExplore.poll();
-			if (!isWithinRange(current) || !visited.add(current)) continue;
 
 			BlockEntity be = world.getBlockEntity(current);
 
-			if (be instanceof CrateStationBlockEntity) addDirectionsToExplore(toExplore, current);
+			if (be instanceof CrateStationBlockEntity) addDirectionsToExplore(toExplore, queued, current);
 
 			if (be instanceof CrateBlockEntity crate) {
 				connectedCrates.add(current);
 
 				if (!crate.storage.isBlank()) registerCrate(current, crate.storage);
 
-				addDirectionsToExplore(toExplore, current);
+				addDirectionsToExplore(toExplore, queued, current);
 			}
 		}
 		//world.getPlayers().getFirst().sendMessage(Text.literal("Updated cache. New crate number: ".concat(String.valueOf(connectedCrates.size())))); // TODO: Uncomment to debug crate connections
 	}
 
-	private void addDirectionsToExplore(Queue<BlockPos> blockPositionExplorationQueue, BlockPos currentBlockPosition) {
+	private void addDirectionsToExplore(Queue<BlockPos> queue, Set<BlockPos> queued, BlockPos current) {
 		for (Direction dir : Direction.values()) {
-			blockPositionExplorationQueue.add(currentBlockPosition.offset(dir));
+			BlockPos next = current.offset(dir);
+
+			if (isWithinRange(next) && queued.add(next)) {
+				queue.add(next);
+			}
 		}
 	}
 
