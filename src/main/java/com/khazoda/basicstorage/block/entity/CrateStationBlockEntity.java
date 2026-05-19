@@ -2,12 +2,13 @@ package com.khazoda.basicstorage.block.entity;
 
 import com.khazoda.basicstorage.registry.BlockEntityRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 
 import java.util.*;
 
@@ -21,26 +22,19 @@ public class CrateStationBlockEntity extends BlockEntity {
 		super(BlockEntityRegistry.CRATE_STATION_BLOCK_ENTITY, pos, state);
 	}
 
-	public static void tick(World world, BlockPos pos, BlockState state, CrateStationBlockEntity be) {
-		if (be.needsCacheUpdate) {
-			be.buildCrateCache();
-			be.needsCacheUpdate = false;
-		}
-	}
-
 	private void buildCrateCache() {
 		if (world == null || world.isClient) return;
 
 		crateRegistry.clear();
 		connectedCrates.clear();
 
-		Queue<BlockPos> toExplore = new LinkedList<>();
+		Queue<BlockPos> toExplore = new ArrayDeque<>();
 		Set<BlockPos> visited = new HashSet<>();
 		toExplore.add(pos);
 
 		while (!toExplore.isEmpty()) {
 			BlockPos current = toExplore.poll();
-			if (visited.contains(current) || !isWithinRange(current)) continue;
+			if (!isWithinRange(current) || !visited.add(current)) continue;
 
 			visited.add(current);
 			BlockEntity be = world.getBlockEntity(current);
@@ -50,7 +44,7 @@ public class CrateStationBlockEntity extends BlockEntity {
 				addDirectionsToExplore(toExplore, current);
 			}
 		}
-//    world.getPlayers().getFirst().sendMessage(Text.literal("Updated cache. New crate number: ".concat(String.valueOf(connectedCrates.size())))); Todo: Uncomment to debug crate connections
+		//world.getPlayers().getFirst().sendMessage(Text.literal("Updated cache. New crate number: ".concat(String.valueOf(connectedCrates.size())))); // TODO: Uncomment to debug crate connections
 		markDirty();
 	}
 
@@ -81,16 +75,25 @@ public class CrateStationBlockEntity extends BlockEntity {
 		super.markRemoved();
 	}
 
+	private void ensureCache() {
+		if (needsCacheUpdate) {
+			buildCrateCache();
+			needsCacheUpdate = false;
+		}
+	}
+
 	public void markCacheForUpdate() {
 		this.needsCacheUpdate = true;
 		markDirty();
 	}
 
 	public Set<BlockPos> getConnectedCrates() {
+		ensureCache();
 		return connectedCrates;
 	}
 
 	public Map<ItemVariant, List<BlockPos>> getCrateRegistry() {
+		ensureCache();
 		return crateRegistry;
 	}
 }

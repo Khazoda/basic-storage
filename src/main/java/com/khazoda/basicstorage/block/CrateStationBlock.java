@@ -2,18 +2,17 @@ package com.khazoda.basicstorage.block;
 
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.block.entity.CrateStationBlockEntity;
-import com.khazoda.basicstorage.registry.BlockEntityRegistry;
 import com.khazoda.basicstorage.registry.BlockRegistry;
 import com.khazoda.basicstorage.registry.SoundRegistry;
+
 import com.mojang.serialization.MapCodec;
+
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,6 +28,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -65,20 +65,16 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 	 */
 	public static void initOnUseMethod() {
 		UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hit) -> {
-			if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_STATION_BLOCK))
-				return ActionResult.PASS;
-			if (!player.canModifyBlocks() || player.isSpectator())
-				return ActionResult.PASS;
-			if(player.getStackInHand(hand).isOf(BlockRegistry.CRATE_BLOCK.asItem()) && player.isSneaking()) {
-				return ActionResult.PASS;
-			}
+			if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_STATION_BLOCK)) return ActionResult.PASS;
+			if (!player.canModifyBlocks() || player.isSpectator()) return ActionResult.PASS;
+			if(player.getStackInHand(hand).isOf(BlockRegistry.CRATE_BLOCK.asItem()) && player.isSneaking()) return ActionResult.PASS;
+			if (world.isClient()) return ActionResult.SUCCESS;
 
 			BlockPos pos = hit.getBlockPos();
 			BlockState state = world.getBlockState(pos);
 			BlockEntity be = world.getBlockEntity(pos);
 
-			if (be == null)
-				return ActionResult.PASS;
+			if (be == null) return ActionResult.PASS;
 
 			CrateStationBlockEntity cdbe = (CrateStationBlockEntity) be;
 			ItemStack playerStack = player.getMainHandStack();
@@ -89,11 +85,7 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 				inserted = depositInventory(player, cdbe);
 			} else if (!player.isSneaking()) {
 				if (playerStack.isEmpty()) {
-					if (!world.isClient())
-						player.sendMessage(
-								Text.translatable("message.basicstorage.station.connected_crate_count", connectedCrateCount)
-										.withColor(0xDDFF99),
-								true);
+					if (!world.isClient()) player.sendMessage(Text.translatable("message.basicstorage.station.connected_crate_count", connectedCrateCount).withColor(0xDDFF99), true);
 					return ActionResult.PASS;
 				}
 				inserted = depositStack(player.getStackInHand(hand), cdbe);
@@ -101,8 +93,7 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 
 			if (!world.isClient()) {
 				if (inserted <= 0) {
-					player.sendMessage(Text.translatable("message.basicstorage.station.no_matching_crates").withColor(0xFF9999),
-							true);
+					player.sendMessage(Text.translatable("message.basicstorage.station.no_matching_crates").withColor(0xFF9999), true);
 					world.playSound(null, pos, SoundRegistry.NO_MATCH, SoundCategory.BLOCKS, 1.1f, 1f);
 					return ActionResult.CONSUME;
 				}
@@ -135,10 +126,10 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 		World world = cdbe.getWorld();
 
 		for (BlockPos cratePos : new ArrayList<>(compatibleCrates)) {
-			if (world == null) return 0; // todo: if something goes wrong, remove this and see if things work lol
+			if (world == null) return 0; // TODO: if something goes wrong, remove this and see if things work lol
 			BlockEntity be = world.getBlockEntity(cratePos);
 			if (!(be instanceof CrateBlockEntity crate)) {
-				// compatibleCrates.remove(cratePos); //TODO: Maybe Remove?
+				cdbe.markCacheForUpdate();
 				continue;
 			}
 
@@ -188,13 +179,6 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 		}
 
 		return totalInserted;
-	}
-
-	@Nullable
-	@Override
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state,
-	                                                              BlockEntityType<T> type) {
-		return validateTicker(type, BlockEntityRegistry.CRATE_STATION_BLOCK_ENTITY, CrateStationBlockEntity::tick);
 	}
 
 	@Nullable

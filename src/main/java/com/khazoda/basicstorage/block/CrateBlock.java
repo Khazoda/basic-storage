@@ -1,7 +1,6 @@
 package com.khazoda.basicstorage.block;
 
 import com.khazoda.basicstorage.BasicStorageConfig;
-import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.registry.BlockRegistry;
 import com.khazoda.basicstorage.registry.DataComponentRegistry;
@@ -10,12 +9,15 @@ import com.khazoda.basicstorage.storage.CrateSlot;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
 import com.khazoda.basicstorage.util.BlockUtils;
 import com.khazoda.basicstorage.util.NumberFormatter;
+
 import com.mojang.serialization.MapCodec;
+
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -51,6 +53,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -69,9 +72,8 @@ import static java.lang.Math.toIntExact;
  */
 public class CrateBlock extends Block implements BlockEntityProvider {
 	public static final MapCodec<CrateBlock> CODEC = CrateBlock.createCodec(CrateBlock::new);
-	public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING; //Todo: remove after migration period
 	public static final EnumProperty<Orientation> ORIENTATION = Properties.ORIENTATION;
-	private static Random random;
+	private static final Random random = new Random();
 	public static final Settings defaultSettings = getCrateSettings();
 
 	private static Block.Settings getCrateSettings() {
@@ -80,8 +82,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
 	public CrateBlock(Settings settings) {
 		super(settings);
-		random = new Random();
-		setDefaultState(this.stateManager.getDefaultState().with(ORIENTATION, Orientation.NORTH_UP).with(HORIZONTAL_FACING, Direction.NORTH));
+		setDefaultState(this.stateManager.getDefaultState().with(ORIENTATION, Orientation.NORTH_UP));
 	}
 
 	public CrateBlock() {
@@ -121,29 +122,21 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 		UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hit) -> {
 			if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_BLOCK)) return ActionResult.PASS;
 			if (!player.canModifyBlocks() || player.isSpectator()) return ActionResult.PASS;
+			if (world.isClient()) return ActionResult.SUCCESS;
 
 			BlockPos pos = hit.getBlockPos();
 			BlockState state = world.getBlockState(pos);
 
-			/* Todo: remove block after migration period */
-			if (!world.isClient) {
-				fixLegacyState(state, world, pos);
-				// Refresh the state variable to ensure method uses corrected data
-				state = world.getBlockState(pos);
-			}
-
 			BlockEntity be = world.getBlockEntity(pos);
 			Direction facing = state.get(Properties.ORIENTATION).getFacing();
 
-			if (be == null) return ActionResult.PASS;
+			if (!(be instanceof CrateBlockEntity cbe)) return ActionResult.PASS;
 			if (facing != hit.getSide()) return ActionResult.PASS;
 
-			CrateBlockEntity cbe = (CrateBlockEntity) be;
 			ItemStack playerStack = player.getMainHandStack();
 			CrateSlot slot = cbe.storage;
 
-			// if (playerStack.isOf(Items.DEBUG_STICK)) return debugInitOnUseMethod(player,
-			// slot); Todo: Enable for debugging
+			//if (playerStack.isOf(Items.DEBUG_STICK)) return debugInitOnUseMethod(player, slot); TODO: Enable for debugging
 
 			try (var t = Transaction.openOuter()) {
 				int inserted = 0;
@@ -163,9 +156,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 				t.commit();
 				if (inserted == 1) world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-0.5f + random.nextFloat() * (1 + 0.5f)) / 10));
 				if (inserted > 1) world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1f);
-				state.updateNeighbors(world, pos, 1);
-				cbe.refresh();
-				world.updateComparators(pos, state.getBlock());
+				state.updateNeighbors(world, pos, Block.NOTIFY_LISTENERS);
 				player.incrementStat(Stats.USED.getOrCreateStat(playerStack.getItem()));
 				world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
 				return ActionResult.SUCCESS;
@@ -267,9 +258,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 			if (extracted > 1) world.playSound(null, pos, SoundRegistry.EXTRACT_MANY, SoundCategory.BLOCKS, 0.75f, 1f);
 			world.playSound(null, pos, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.BLOCKS, 0.35f, 1f);
 		}
-		cbe.refresh();
-		state.updateNeighbors(world, pos, 1);
-		world.updateComparators(pos, state.getBlock());
+		state.updateNeighbors(world, pos, Block.NOTIFY_LISTENERS);
 		world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
 	}
 
@@ -315,7 +304,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
 	@Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		builder.add(ORIENTATION, HORIZONTAL_FACING);
+		builder.add(ORIENTATION);
 	}
 
 	@Override
@@ -342,13 +331,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 			rotation = Direction.UP;
 		}
 
-		/* Todo: remove block after migration period */
-		Direction legacyFacing = facing;
-		if (facing.getAxis().isVertical()) legacyFacing = ctx.getHorizontalPlayerFacing().getOpposite();
-
-		return this.getDefaultState()
-				.with(Properties.ORIENTATION, Orientation.byDirections(facing, rotation))
-				.with(Properties.HORIZONTAL_FACING, legacyFacing); //Todo: remove after migration period
+		return this.getDefaultState().with(Properties.ORIENTATION, Orientation.byDirections(facing, rotation));
 	}
 
 	@Override
@@ -362,29 +345,6 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 		}
 		super.onStateReplaced(state, world, pos, newState, moved);
 	}
-
-	/* Todo: remove this method after migration period */
-	@Override
-	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-		if (!world.isClient) fixLegacyState(state, world, pos);
-		super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
-	}
-
-	/* Todo: remove this method after migration period */
-	private static void fixLegacyState(BlockState state, World world, BlockPos pos) {
-		Orientation currentOrientation = state.get(ORIENTATION);
-		Direction legacyFacing = state.get(HORIZONTAL_FACING);
-		if (currentOrientation != Orientation.NORTH_UP) return;
-		if (legacyFacing != Direction.NORTH) {
-			Constants.BS_LOG.warn("[Crate Migration] Fixing block at {}. Legacy says '{}', but Orientation was Default.", pos, legacyFacing);
-			Orientation fixedOrientation = Orientation.byDirections(legacyFacing, Direction.UP);
-			BlockState fixedState = state.with(ORIENTATION, fixedOrientation);
-			world.setBlockState(pos, fixedState, Block.NOTIFY_ALL);
-
-			Constants.BS_LOG.info("[Crate Migration] FIXED {}: Rotated to '{}'", pos, fixedOrientation);
-		}
-	}
-
 
 	@Override
 	protected BlockState rotate(BlockState state, BlockRotation rotation) {

@@ -59,8 +59,8 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 				this.markedDirty = true;
 			}
 			if (wasBlank) {
-				transaction.addOuterCloseCallback((result) -> {
-					if (owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
+				transaction.addOuterCloseCallback(result -> {
+					if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
 				});
 			}
 		} else if (inserted < 0) {
@@ -82,8 +82,8 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 				this.markedDirty = true;
 			}
 			if (amountBefore == extracted) {
-				transaction.addOuterCloseCallback((result) -> {
-					if (owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
+				transaction.addOuterCloseCallback(result -> {
+					if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
 				});
 			}
 		} else if (extracted < 0) {
