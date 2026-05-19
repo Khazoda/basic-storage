@@ -22,11 +22,9 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 	private int count;
 
 	private final CrateBlockEntity owner;
-	private boolean markedDirty;
 
 	public CrateSlot(CrateBlockEntity owner) {
 		this.owner = owner;
-		this.markedDirty = false;
 	}
 
 	@Override
@@ -56,7 +54,6 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 			count += inserted;
 			if (item.isBlank()) {
 				item = resource;
-				this.markedDirty = true;
 			}
 			if (wasBlank) {
 				transaction.addOuterCloseCallback(result -> {
@@ -79,7 +76,6 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 			count -= extracted;
 			if (count == 0) {
 				item = ItemVariant.blank();
-				this.markedDirty = true;
 			}
 			if (amountBefore == extracted) {
 				transaction.addOuterCloseCallback(result -> {
@@ -114,14 +110,13 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 
 	@Override
 	protected Snapshot createSnapshot() {
-		return new Snapshot(new ResourceAmount<>(item, count), this.markedDirty);
+		return new Snapshot(new ResourceAmount<>(item, count));
 	}
 
 	@Override
 	protected void readSnapshot(Snapshot snapshot) {
 		item = snapshot.contents.resource();
 		count = (int) snapshot.contents.amount();
-		this.markedDirty = snapshot.itemChanged;
 	}
 
 	@Override
@@ -145,6 +140,5 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 		return isResourceBlank();
 	}
 
-	protected record Snapshot(ResourceAmount<ItemVariant> contents, boolean itemChanged) {
-	}
+	protected record Snapshot(ResourceAmount<ItemVariant> contents) { }
 }

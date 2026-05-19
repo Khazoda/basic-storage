@@ -15,7 +15,9 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.BlockSoundGroup;
@@ -33,6 +35,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.khazoda.basicstorage.storage.CrateStationHelper.notifyNearbyStations;
 
 /**
  * Right Click
@@ -71,46 +75,43 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 			if (world.isClient()) return ActionResult.SUCCESS;
 
 			BlockPos pos = hit.getBlockPos();
-			BlockState state = world.getBlockState(pos);
-			BlockEntity be = world.getBlockEntity(pos);
 
-			if (be == null) return ActionResult.PASS;
+			if (!(world.getBlockEntity(pos) instanceof CrateStationBlockEntity cdbe)) return ActionResult.PASS;
 
-			CrateStationBlockEntity cdbe = (CrateStationBlockEntity) be;
-			ItemStack playerStack = player.getMainHandStack();
-			int connectedCrateCount = cdbe.getConnectedCrates().size();
-			int inserted = 0;
+			ItemStack playerStack = player.getStackInHand(hand);
+			Item usedItem = playerStack.getItem();
+			boolean hadHeldItem = !playerStack.isEmpty();
+
+			int inserted;
 
 			if (player.isSneaking()) {
 				inserted = depositInventory(player, cdbe);
-			} else if (!player.isSneaking()) {
+			} else {
 				if (playerStack.isEmpty()) {
-					if (!world.isClient()) player.sendMessage(Text.translatable("message.basicstorage.station.connected_crate_count", connectedCrateCount).withColor(0xDDFF99), true);
-					return ActionResult.PASS;
+					int connectedCrateCount = cdbe.getConnectedCrates().size();
+					player.sendMessage(Text.translatable("message.basicstorage.station.connected_crate_count", connectedCrateCount).withColor(0xDDFF99), true);
+					return ActionResult.SUCCESS;
 				}
-				inserted = depositStack(player.getStackInHand(hand), cdbe);
+
+				inserted = depositStack(playerStack, cdbe);
 			}
 
-			if (!world.isClient()) {
-				if (inserted <= 0) {
-					player.sendMessage(Text.translatable("message.basicstorage.station.no_matching_crates").withColor(0xFF9999), true);
-					world.playSound(null, pos, SoundRegistry.NO_MATCH, SoundCategory.BLOCKS, 1.1f, 1f);
-					return ActionResult.CONSUME;
-				}
-
-				if (inserted == 1) {
-					world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1.05f);
-				} else if (inserted <= 64) {
-					world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1.05f);
-				} else {
-					world.playSound(null, pos, SoundRegistry.INSERT_LOADS, SoundCategory.BLOCKS, 1f, 1.05f);
-				}
-
-				state.updateNeighbors(world, pos, 1);
-				cdbe.markDirty();
-				player.incrementStat(Stats.USED.getOrCreateStat(playerStack.getItem()));
-				world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+			if (inserted <= 0) {
+				player.sendMessage(Text.translatable("message.basicstorage.station.no_matching_crates").withColor(0xFF9999), true);
+				world.playSound(null, pos, SoundRegistry.NO_MATCH, SoundCategory.BLOCKS, 1.1f, 1f);
+				return ActionResult.CONSUME;
 			}
+
+			if (inserted == 1) {
+				world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1.05f);
+			} else if (inserted <= 64) {
+				world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1.05f);
+			} else {
+				world.playSound(null, pos, SoundRegistry.INSERT_LOADS, SoundCategory.BLOCKS, 1f, 1.05f);
+			}
+
+			if (hadHeldItem) player.incrementStat(Stats.USED.getOrCreateStat(usedItem));
+			world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
 
 			return ActionResult.SUCCESS;
 		});
@@ -123,10 +124,11 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 		ItemVariant variant = ItemVariant.of(stack);
 		List<BlockPos> compatibleCrates = cdbe.getCrateRegistry().get(variant);
 		if (compatibleCrates == null) return 0;
+
 		World world = cdbe.getWorld();
+		if (world == null) return 0;
 
 		for (BlockPos cratePos : new ArrayList<>(compatibleCrates)) {
-			if (world == null) return 0; // TODO: if something goes wrong, remove this and see if things work lol
 			BlockEntity be = world.getBlockEntity(cratePos);
 			if (!(be instanceof CrateBlockEntity crate)) {
 				cdbe.markCacheForUpdate();
@@ -162,7 +164,10 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 			for (BlockPos cratePos : compatibleCrates) {
 				BlockEntity be = world.getBlockEntity(cratePos);
 
-				if (!(be instanceof CrateBlockEntity crate)) continue;
+				if (!(be instanceof CrateBlockEntity crate)) {
+					station.markCacheForUpdate();
+					continue;
+				}
 
 				try (Transaction transaction = Transaction.openOuter()) {
 					int moved = (int) crate.storage.insert(variant, stack.getCount(), transaction);
@@ -179,6 +184,18 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 		}
 
 		return totalInserted;
+	}
+
+	@Override
+	public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+		super.onPlaced(world, pos, state, placer, itemStack);
+		notifyNearbyStations(world, pos);
+	}
+
+	@Override
+	protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+		if (!state.isOf(newState.getBlock())) notifyNearbyStations(world, pos);
+		super.onStateReplaced(state, world, pos, newState, moved);
 	}
 
 	@Nullable

@@ -74,27 +74,25 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 		var stack = item.toStack();
 		var model = itemRenderer.getModel(stack, null, null, 0);
 
-		var lights = new Vector3f[2];
-		System.arraycopy(RenderSystemAccessor.getShaderLightDirections(), 0, lights, 0, 2);
+		Vector3f[] shaderLights = RenderSystemAccessor.getShaderLightDirections();
+		Vector3f oldLight0 = shaderLights[0];
+		Vector3f oldLight1 = shaderLights[1];
 
-		if (model.isSideLit()) {
-			matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_3D);
-			DiffuseLighting.enableGuiDepthLighting();
-		} else {
-			matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_FLAT);
-			DiffuseLighting.disableGuiDepthLighting();
+		try {
+			if (model.isSideLit()) {
+				matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_3D);
+				DiffuseLighting.enableGuiDepthLighting();
+			} else {
+				matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_FLAT);
+				DiffuseLighting.disableGuiDepthLighting();
+			}
+
+			itemRenderer.renderItem(stack, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV, model);
+		} finally {
+			shaderLights[0] = oldLight0;
+			shaderLights[1] = oldLight1;
+			matrices.pop();
 		}
-
-		itemRenderer.renderItem(stack, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV, model);
-
-		System.arraycopy(lights, 0, RenderSystemAccessor.getShaderLightDirections(), 0, 2);
-		matrices.pop();
-	}
-
-	private static void flipHorizontally(MatrixStack matrix) {
-		/* Global operation applied to second rotation (quaternions are so weird) */
-		matrix.multiply(new Quaternionf(0.24, -0.37, -0.1, 0.89)); // rotates face to the front left face
-		matrix.multiply(new Quaternionf(0.24, 0.37, 0.1, 0.89).invert()); // rotates back to base orientation
 	}
 
 	@Override

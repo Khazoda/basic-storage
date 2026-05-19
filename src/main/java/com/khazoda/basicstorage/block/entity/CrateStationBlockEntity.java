@@ -36,16 +36,19 @@ public class CrateStationBlockEntity extends BlockEntity {
 			BlockPos current = toExplore.poll();
 			if (!isWithinRange(current) || !visited.add(current)) continue;
 
-			visited.add(current);
 			BlockEntity be = world.getBlockEntity(current);
+
 			if (be instanceof CrateStationBlockEntity) addDirectionsToExplore(toExplore, current);
+
 			if (be instanceof CrateBlockEntity crate) {
-				registerCrate(current, crate.storage);
+				connectedCrates.add(current);
+
+				if (!crate.storage.isBlank()) registerCrate(current, crate.storage);
+
 				addDirectionsToExplore(toExplore, current);
 			}
 		}
 		//world.getPlayers().getFirst().sendMessage(Text.literal("Updated cache. New crate number: ".concat(String.valueOf(connectedCrates.size())))); // TODO: Uncomment to debug crate connections
-		markDirty();
 	}
 
 	private void addDirectionsToExplore(Queue<BlockPos> blockPositionExplorationQueue, BlockPos currentBlockPosition) {
@@ -55,17 +58,12 @@ public class CrateStationBlockEntity extends BlockEntity {
 	}
 
 	private void registerCrate(BlockPos cratePos, CrateSlot storage) {
-		if (!storage.isBlank()) {
-			ItemVariant variant = storage.getResource();
-			crateRegistry.computeIfAbsent(variant, k -> new ArrayList<>()).add(cratePos);
-			connectedCrates.add(cratePos);
-		}
+		ItemVariant variant = storage.getResource();
+		crateRegistry.computeIfAbsent(variant, k -> new ArrayList<>()).add(cratePos);
 	}
 
 	private boolean isWithinRange(BlockPos target) {
-		return Math.abs(target.getX() - pos.getX()) <= MAX_RADIUS &&
-				Math.abs(target.getY() - pos.getY()) <= MAX_RADIUS &&
-				Math.abs(target.getZ() - pos.getZ()) <= MAX_RADIUS;
+		return Math.abs(target.getX() - pos.getX()) <= MAX_RADIUS && Math.abs(target.getY() - pos.getY()) <= MAX_RADIUS && Math.abs(target.getZ() - pos.getZ()) <= MAX_RADIUS;
 	}
 
 	@Override
@@ -76,15 +74,15 @@ public class CrateStationBlockEntity extends BlockEntity {
 	}
 
 	private void ensureCache() {
-		if (needsCacheUpdate) {
-			buildCrateCache();
-			needsCacheUpdate = false;
-		}
+		if (!needsCacheUpdate) return;
+		if (world == null || world.isClient) return;
+
+		buildCrateCache();
+		needsCacheUpdate = false;
 	}
 
 	public void markCacheForUpdate() {
 		this.needsCacheUpdate = true;
-		markDirty();
 	}
 
 	public Set<BlockPos> getConnectedCrates() {

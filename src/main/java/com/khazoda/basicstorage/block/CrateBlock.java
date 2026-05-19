@@ -122,18 +122,18 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 		UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hit) -> {
 			if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_BLOCK)) return ActionResult.PASS;
 			if (!player.canModifyBlocks() || player.isSpectator()) return ActionResult.PASS;
-			if (world.isClient()) return ActionResult.SUCCESS;
 
 			BlockPos pos = hit.getBlockPos();
 			BlockState state = world.getBlockState(pos);
 
-			BlockEntity be = world.getBlockEntity(pos);
-			Direction facing = state.get(Properties.ORIENTATION).getFacing();
+			if (!(world.getBlockEntity(pos) instanceof CrateBlockEntity cbe)) return ActionResult.PASS;
+			if (state.get(Properties.ORIENTATION).getFacing() != hit.getSide()) return ActionResult.PASS;
+			if (world.isClient()) return ActionResult.SUCCESS;
 
-			if (!(be instanceof CrateBlockEntity cbe)) return ActionResult.PASS;
-			if (facing != hit.getSide()) return ActionResult.PASS;
+			ItemStack playerStack = player.getStackInHand(hand);
+			Item usedItem = playerStack.getItem();
+			boolean hadHeldItem = !playerStack.isEmpty();
 
-			ItemStack playerStack = player.getMainHandStack();
 			CrateSlot slot = cbe.storage;
 
 			//if (playerStack.isOf(Items.DEBUG_STICK)) return debugInitOnUseMethod(player, slot); TODO: Enable for debugging
@@ -154,11 +154,16 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 				}
 
 				t.commit();
+
 				if (inserted == 1) world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1f + ((-0.5f + random.nextFloat() * (1 + 0.5f)) / 10));
 				if (inserted > 1) world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1f);
+
 				state.updateNeighbors(world, pos, Block.NOTIFY_LISTENERS);
-				player.incrementStat(Stats.USED.getOrCreateStat(playerStack.getItem()));
+
+				if (hadHeldItem) player.incrementStat(Stats.USED.getOrCreateStat(usedItem));
+
 				world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+
 				return ActionResult.SUCCESS;
 			}
 		});
@@ -234,8 +239,8 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
 	public static void extractFromCrate(World world, BlockPos pos, PlayerEntity player) {
 		if (!player.canModifyBlocks()) return;
-		CrateBlockEntity cbe = (CrateBlockEntity) world.getBlockEntity(pos);
-		if (cbe == null || cbe.storage.isBlank()) return;
+		BlockEntity be = world.getBlockEntity(pos);
+		if (!(be instanceof CrateBlockEntity cbe) || cbe.storage.isBlank()) return;
 
 		BlockState state = world.getBlockState(pos);
 		var hit = BlockUtils.getHitResult(player, pos);
@@ -268,8 +273,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 	@Override
 	public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
 		BlockEntity be = world.getBlockEntity(pos);
-		if (!(be == null)) {
-			CrateBlockEntity cbe = (CrateBlockEntity) be;
+		if (be instanceof CrateBlockEntity cbe) {
 			if (!world.isClient() && player.isCreative() && !cbe.storage.getResource().toStack().isEmpty())
 				getDroppedStacks(state, (ServerWorld) world, pos, cbe, player, player.getStackInHand(Hand.MAIN_HAND)).forEach(stack -> ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), stack));
 		}
