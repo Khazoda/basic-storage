@@ -47,175 +47,174 @@ import java.util.List;
  * Shift Left Click - Nothing
  */
 public class CrateStationBlock extends BlockWithEntity implements BlockEntityProvider {
-  public static final MapCodec<CrateStationBlock> CODEC = CrateStationBlock.createCodec(CrateStationBlock::new);
-  public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(3.5f)
-      .pistonBehavior(PistonBehavior.BLOCK).instrument(NoteBlockInstrument.BASS).mapColor(MapColor.OAK_TAN);
+	public static final MapCodec<CrateStationBlock> CODEC = CrateStationBlock.createCodec(CrateStationBlock::new);
+	public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(3.5f)
+			.pistonBehavior(PistonBehavior.BLOCK).instrument(NoteBlockInstrument.BASS).mapColor(MapColor.OAK_TAN);
 
-  public CrateStationBlock(Settings settings) {
-    super(settings);
-  }
+	public CrateStationBlock(Settings settings) {
+		super(settings);
+	}
 
-  public CrateStationBlock() {
-    this(defaultSettings);
-  }
+	public CrateStationBlock() {
+		this(defaultSettings);
+	}
 
-  /**
-   * Event hook instead of onUse() method in order to capture interactions while
-   * sneaking
-   */
-  public static void initOnUseMethod() {
-    UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hit) -> {
-      if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_STATION_BLOCK))
-        return ActionResult.PASS;
-      if (!player.canModifyBlocks() || player.isSpectator())
-        return ActionResult.PASS;
-      if(player.getStackInHand(hand).isOf(BlockRegistry.CRATE_BLOCK.asItem()) && player.isSneaking()) {
-        return ActionResult.PASS;
-      }
+	/**
+	 * Event hook instead of onUse() method in order to capture interactions while
+	 * sneaking
+	 */
+	public static void initOnUseMethod() {
+		UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hit) -> {
+			if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_STATION_BLOCK))
+				return ActionResult.PASS;
+			if (!player.canModifyBlocks() || player.isSpectator())
+				return ActionResult.PASS;
+			if(player.getStackInHand(hand).isOf(BlockRegistry.CRATE_BLOCK.asItem()) && player.isSneaking()) {
+				return ActionResult.PASS;
+			}
 
-      BlockPos pos = hit.getBlockPos();
-      BlockState state = world.getBlockState(pos);
-      BlockEntity be = world.getBlockEntity(pos);
+			BlockPos pos = hit.getBlockPos();
+			BlockState state = world.getBlockState(pos);
+			BlockEntity be = world.getBlockEntity(pos);
 
-      if (be == null)
-        return ActionResult.PASS;
+			if (be == null)
+				return ActionResult.PASS;
 
-      CrateStationBlockEntity cdbe = (CrateStationBlockEntity) be;
-      ItemStack playerStack = player.getMainHandStack();
-      int connectedCrateCount = cdbe.getConnectedCrates().size();
-      int inserted = 0;
+			CrateStationBlockEntity cdbe = (CrateStationBlockEntity) be;
+			ItemStack playerStack = player.getMainHandStack();
+			int connectedCrateCount = cdbe.getConnectedCrates().size();
+			int inserted = 0;
 
-      if (player.isSneaking()) {
-        inserted = depositInventory(player, cdbe);
-      } else if (!player.isSneaking()) {
-        if (playerStack.isEmpty()) {
-          if (!world.isClient())
-            player.sendMessage(
-                Text.translatable("message.basicstorage.station.connected_crate_count", connectedCrateCount)
-                    .withColor(0xDDFF99),
-                true);
-          return ActionResult.PASS;
-        }
-        inserted = depositStack(player.getStackInHand(hand), cdbe);
-      }
+			if (player.isSneaking()) {
+				inserted = depositInventory(player, cdbe);
+			} else if (!player.isSneaking()) {
+				if (playerStack.isEmpty()) {
+					if (!world.isClient())
+						player.sendMessage(
+								Text.translatable("message.basicstorage.station.connected_crate_count", connectedCrateCount)
+										.withColor(0xDDFF99),
+								true);
+					return ActionResult.PASS;
+				}
+				inserted = depositStack(player.getStackInHand(hand), cdbe);
+			}
 
-      if (!world.isClient()) {
-        if (inserted <= 0) {
-          player.sendMessage(Text.translatable("message.basicstorage.station.no_matching_crates").withColor(0xFF9999),
-              true);
-          world.playSound(null, pos, SoundRegistry.NO_MATCH, SoundCategory.BLOCKS, 1.1f, 1f);
-          return ActionResult.CONSUME;
-        }
+			if (!world.isClient()) {
+				if (inserted <= 0) {
+					player.sendMessage(Text.translatable("message.basicstorage.station.no_matching_crates").withColor(0xFF9999),
+							true);
+					world.playSound(null, pos, SoundRegistry.NO_MATCH, SoundCategory.BLOCKS, 1.1f, 1f);
+					return ActionResult.CONSUME;
+				}
 
-        if (inserted == 1) {
-          world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1.05f);
-        } else if (inserted <= 64) {
-          world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1.05f);
-        } else {
-          world.playSound(null, pos, SoundRegistry.INSERT_LOADS, SoundCategory.BLOCKS, 1f, 1.05f);
-        }
+				if (inserted == 1) {
+					world.playSound(null, pos, SoundRegistry.INSERT_ONE, SoundCategory.BLOCKS, 1f, 1.05f);
+				} else if (inserted <= 64) {
+					world.playSound(null, pos, SoundRegistry.INSERT_MANY, SoundCategory.BLOCKS, 1f, 1.05f);
+				} else {
+					world.playSound(null, pos, SoundRegistry.INSERT_LOADS, SoundCategory.BLOCKS, 1f, 1.05f);
+				}
 
-        state.updateNeighbors(world, pos, 1);
-        cdbe.markDirty();
-        player.incrementStat(Stats.USED.getOrCreateStat(playerStack.getItem()));
-        world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-      }
+				state.updateNeighbors(world, pos, 1);
+				cdbe.markDirty();
+				player.incrementStat(Stats.USED.getOrCreateStat(playerStack.getItem()));
+				world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+			}
 
-      return ActionResult.SUCCESS;
-    });
-  }
+			return ActionResult.SUCCESS;
+		});
+	}
 
-  private static int depositStack(ItemStack stack, CrateStationBlockEntity cdbe) {
-    int inserted = 0;
-    if (stack.isEmpty())
-      return 0;
+	private static int depositStack(ItemStack stack, CrateStationBlockEntity cdbe) {
+		int inserted = 0;
+		if (stack.isEmpty()) return 0;
 
-    ItemVariant variant = ItemVariant.of(stack);
-    List<BlockPos> compatibleCrates = cdbe.getCrateRegistry().get(variant);
-    if (compatibleCrates == null)
-      return 0;
-    World world = cdbe.getWorld();
+		ItemVariant variant = ItemVariant.of(stack);
+		List<BlockPos> compatibleCrates = cdbe.getCrateRegistry().get(variant);
+		if (compatibleCrates == null) return 0;
+		World world = cdbe.getWorld();
 
-    for (BlockPos cratePos : new ArrayList<>(compatibleCrates)) {
-      if (world == null)
-        return 0; // todo: if something goes wrong, remove this and see if things work lol
-      BlockEntity be = world.getBlockEntity(cratePos);
-      if (!(be instanceof CrateBlockEntity crate)) {
-        // compatibleCrates.remove(cratePos); //TODO: Maybe Remove?
-        continue;
-      }
+		for (BlockPos cratePos : new ArrayList<>(compatibleCrates)) {
+			if (world == null) return 0; // todo: if something goes wrong, remove this and see if things work lol
+			BlockEntity be = world.getBlockEntity(cratePos);
+			if (!(be instanceof CrateBlockEntity crate)) {
+				// compatibleCrates.remove(cratePos); //TODO: Maybe Remove?
+				continue;
+			}
 
-      try (Transaction transaction = Transaction.openOuter()) {
-        inserted = (int) crate.storage.insert(variant, stack.getCount(), transaction);
-        if (inserted > 0) {
-          stack.decrement(inserted);
-          transaction.commit();
-          return inserted;
-        }
-      }
-    }
-    return inserted;
-  }
+			try (Transaction transaction = Transaction.openOuter()) {
+				inserted = (int) crate.storage.insert(variant, stack.getCount(), transaction);
+				if (inserted > 0) {
+					stack.decrement(inserted);
+					transaction.commit();
+					return inserted;
+				}
+			}
+		}
+		return inserted;
+	}
 
-  private static int depositInventory(PlayerEntity player, CrateStationBlockEntity cdbe) {
-    int inserted = 0;
-    PlayerInventoryStorage invStorage = PlayerInventoryStorage.of(player);
-    World world = cdbe.getWorld();
+	private static int depositInventory(PlayerEntity player, CrateStationBlockEntity station) {
+		int totalInserted = 0;
+		World world = station.getWorld();
 
-    for (int i = 0; i < player.getInventory().main.size(); i++) {
-      ItemStack stack = player.getInventory().main.get(i);
-      if (!stack.isEmpty()) {
-        ItemVariant variant = ItemVariant.of(stack);
-        List<BlockPos> compatibleCrates = cdbe.getCrateRegistry().get(variant);
+		if (world == null) return 0;
 
-        if (compatibleCrates != null) {
-          for (BlockPos cratePos : compatibleCrates) {
-            if (world == null)
-              return 0;
-            BlockEntity be = world.getBlockEntity(cratePos);
-            if (!(be instanceof CrateBlockEntity crate))
-              continue;
+		for (ItemStack stack : player.getInventory().main) {
+			if (stack.isEmpty()) continue;
 
-            try (Transaction transaction = Transaction.openOuter()) {
-              inserted += (int) crate.storage.insert(variant, stack.getCount(), transaction);
-              if (inserted > 0) {
-                stack.decrement(inserted);
-                transaction.commit();
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-    return inserted;
-  }
+			ItemVariant variant = ItemVariant.of(stack);
+			List<BlockPos> compatibleCrates = station.getCrateRegistry().get(variant);
 
-  @Nullable
-  @Override
-  public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state,
-                                                                BlockEntityType<T> type) {
-    return validateTicker(type, BlockEntityRegistry.CRATE_STATION_BLOCK_ENTITY, CrateStationBlockEntity::tick);
-  }
+			if (compatibleCrates == null || compatibleCrates.isEmpty()) continue;
 
-  @Nullable
-  @Override
-  public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-    return new CrateStationBlockEntity(pos, state);
-  }
+			for (BlockPos cratePos : compatibleCrates) {
+				BlockEntity be = world.getBlockEntity(cratePos);
 
-  @Override
-  public BlockState getPlacementState(ItemPlacementContext ctx) {
-    return this.getDefaultState();
-  }
+				if (!(be instanceof CrateBlockEntity crate)) continue;
 
-  @Override
-  protected BlockRenderType getRenderType(BlockState state) {
-    return BlockRenderType.MODEL;
-  }
+				try (Transaction transaction = Transaction.openOuter()) {
+					int moved = (int) crate.storage.insert(variant, stack.getCount(), transaction);
 
-  @Override
-  public MapCodec<CrateStationBlock> getCodec() {
-    return CODEC;
-  }
+					if (moved > 0) {
+						stack.decrement(moved);
+						totalInserted += moved;
+						transaction.commit();
+
+						if (stack.isEmpty()) break;
+					}
+				}
+			}
+		}
+
+		return totalInserted;
+	}
+
+	@Nullable
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state,
+	                                                              BlockEntityType<T> type) {
+		return validateTicker(type, BlockEntityRegistry.CRATE_STATION_BLOCK_ENTITY, CrateStationBlockEntity::tick);
+	}
+
+	@Nullable
+	@Override
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+		return new CrateStationBlockEntity(pos, state);
+	}
+
+	@Override
+	public BlockState getPlacementState(ItemPlacementContext ctx) {
+		return this.getDefaultState();
+	}
+
+	@Override
+	protected BlockRenderType getRenderType(BlockState state) {
+		return BlockRenderType.MODEL;
+	}
+
+	@Override
+	public MapCodec<CrateStationBlock> getCodec() {
+		return CODEC;
+	}
 }

@@ -16,20 +16,18 @@ import java.util.concurrent.CompletableFuture;
 
 public class CrateLootTableProvider extends FabricBlockLootTableProvider {
 
-  protected CrateLootTableProvider(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
-    super(dataOutput, registryLookup);
-  }
+	protected CrateLootTableProvider(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+		super(dataOutput, registryLookup);
+	}
 
-  @Override
-  public void generate() {
-    addDrop(BlockRegistry.CRATE_BLOCK, this::drawerDrops);
-    addDrop(BlockRegistry.CRATE_STATION_BLOCK);
-  }
+	@Override
+	public void generate() {
+		addDrop(BlockRegistry.CRATE_BLOCK, this::drawerDrops);
+		addDrop(BlockRegistry.CRATE_STATION_BLOCK);
+	}
 
-  private LootTable.Builder drawerDrops(Block drop) {
-    return LootTable.builder().pool(LootPool.builder()
-        .rolls(ConstantLootNumberProvider.create(1.0f)).with(ItemEntry.builder(drop)
-            .apply(CopyComponentsLootFunction.builder(CopyComponentsLootFunction.Source.BLOCK_ENTITY)
-                .include(DataComponentRegistry.CRATE_CONTENTS))));
-  }
+	private LootTable.Builder drawerDrops(Block drop) {
+		return LootTable.builder().pool(LootPool.builder().rolls(ConstantLootNumberProvider.create(1.0f)).with(ItemEntry.builder(drop)
+				.apply(CopyComponentsLootFunction.builder(CopyComponentsLootFunction.Source.BLOCK_ENTITY).include(DataComponentRegistry.CRATE_CONTENTS))));
+	}
 }

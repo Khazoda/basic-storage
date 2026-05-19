@@ -1,7 +1,3 @@
 package com.khazoda.basicstorage.util;
 
-public class RegistryHelper {
-
-
-
-}
+public class RegistryHelper { }

@@ -5,41 +5,41 @@
   "name": "Basic Storage",
   "description": "Vanilla-friendly mass item storage",
   "authors": [
-    "Khazoda"
+	"Khazoda"
   ],
   "contact": {
-    "homepage": "https://khazoda.com#basic-storage",
-    "sources": "https://github.com/Khazoda/basic-storage",
-    "issues": "https://github.com/Khazoda/basic-storage/issues"
+	"homepage": "https://khazoda.com#basic-storage",
+	"sources": "https://github.com/Khazoda/basic-storage",
+	"issues": "https://github.com/Khazoda/basic-storage/issues"
   },
   "license": "MIT",
   "icon": "assets/basicstorage/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "com.khazoda.basicstorage.BasicStorage"
-    ],
-    "client": [
-      "com.khazoda.basicstorage.BasicStorageClient"
-    ],
-    "fabric-datagen": [
-      "com.khazoda.basicstorage.datagen.BasicStorageDataGenerator"
-    ]
+	"main": [
+	  "com.khazoda.basicstorage.BasicStorage"
+	],
+	"client": [
+	  "com.khazoda.basicstorage.BasicStorageClient"
+	],
+	"fabric-datagen": [
+	  "com.khazoda.basicstorage.datagen.BasicStorageDataGenerator"
+	]
   },
   "mixins": [
-    "basic-storage.mixins.json",
-    {
-      "config": "basic-storage.client.mixins.json",
-      "environment": "client"
-    }
+	"basic-storage.mixins.json",
+	{
+	  "config": "basic-storage.client.mixins.json",
+	  "environment": "client"
+	}
   ],
   "depends": {
-    "fabricloader": ">=0.15.0",
-    "minecraft": "~1.21",
-    "java": ">=21",
-    "fabric-api": "*"
+	"fabricloader": ">=0.15.0",
+	"minecraft": "~1.21",
+	"java": ">=21",
+	"fabric-api": "*"
   },
   "suggests": {
-    "another-mod": "*"
+	"another-mod": "*"
   }
 }

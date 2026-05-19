@@ -8,14 +8,14 @@ import net.minecraft.text.Text;
 
 
 public class ItemGroupRegistry {
-  public static ItemGroup createItemGroup() {
-    BasicStorage.loadedRegistries += 1;
-    return FabricItemGroup.builder()
-        .icon(() -> new ItemStack(BlockRegistry.CRATE_BLOCK))
-        .displayName(Text.translatable("basicstorage.itemGroup"))
-        .entries((displayContext, entries) -> {
-          entries.add(new ItemStack(BlockRegistry.CRATE_BLOCK));
-          entries.add(new ItemStack(BlockRegistry.CRATE_STATION_BLOCK));
-        }).build();
-  }
+	public static ItemGroup createItemGroup() {
+		BasicStorage.loadedRegistries += 1;
+		return FabricItemGroup.builder()
+				.icon(() -> new ItemStack(BlockRegistry.CRATE_BLOCK))
+				.displayName(Text.translatable("basicstorage.itemGroup"))
+				.entries((displayContext, entries) -> {
+					entries.add(new ItemStack(BlockRegistry.CRATE_BLOCK));
+					entries.add(new ItemStack(BlockRegistry.CRATE_STATION_BLOCK));
+				}).build();
+	}
 }
