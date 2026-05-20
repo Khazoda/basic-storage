@@ -48,14 +48,17 @@ public class CrateBlockEntity extends BlockEntity {
 	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		super.writeNbt(nbt, registryLookup);
 
-		NbtCompound storageNbt = new NbtCompound();
-		storage.writeNbt(storageNbt, registryLookup);
-		nbt.put("crateStack", storageNbt);
+		if (!storage.isBlank()) {
+			NbtCompound storageNbt = new NbtCompound();
+			storage.writeNbt(storageNbt, registryLookup);
+			nbt.put("crateStack", storageNbt);
+		}
 	}
 
 	@Override
 	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		super.readNbt(nbt, registryLookup);
+
 		if (nbt.contains("crateStack", 10)) storage.readNbt(nbt.getCompound("crateStack"), registryLookup);
 	}
 
