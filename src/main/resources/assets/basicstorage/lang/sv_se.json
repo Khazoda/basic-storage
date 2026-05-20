@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "Staplar insatta",
   "subtitles.basicstorage.block.crate.extract_one": "Föremål uttaget",
   "subtitles.basicstorage.block.crate.extract_many": "Stapel uttagen",
-  "subtitles.basicstorage.block.crate.no_match": "Stationen avvisar föremålet"
+  "subtitles.basicstorage.block.crate.no_match": "Stationen avvisar föremålet",
+  "block.basicstorage.crate_connector": "Lådanslutare"
 }

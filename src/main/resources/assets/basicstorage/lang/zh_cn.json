@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "放入多组物品",
   "subtitles.basicstorage.block.crate.extract_one": "取出物品",
   "subtitles.basicstorage.block.crate.extract_many": "取出一组物品",
-  "subtitles.basicstorage.block.crate.no_match": "终端拒绝该物品"
+  "subtitles.basicstorage.block.crate.no_match": "终端拒绝该物品",
+  "block.basicstorage.crate_connector": "板条箱连接器"
 }

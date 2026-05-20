@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "Stapel eingefügt",
   "subtitles.basicstorage.block.crate.extract_one": "Gegenstand entnommen",
   "subtitles.basicstorage.block.crate.extract_many": "Stapel entnommen",
-  "subtitles.basicstorage.block.crate.no_match": "Station weist Gegenstand ab"
+  "subtitles.basicstorage.block.crate.no_match": "Station weist Gegenstand ab",
+  "block.basicstorage.crate_connector": "Kistenverbinder"
 }

@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "複数スタックを挿入",
   "subtitles.basicstorage.block.crate.extract_one": "アイテムを取り出した",
   "subtitles.basicstorage.block.crate.extract_many": "スタックを取り出した",
-  "subtitles.basicstorage.block.crate.no_match": "ステーションがアイテムを拒否"
+  "subtitles.basicstorage.block.crate.no_match": "ステーションがアイテムを拒否",
+  "block.basicstorage.crate_connector": "クレートコネクター"
 }

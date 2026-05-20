@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "Yığınlar yerleştirildi",
   "subtitles.basicstorage.block.crate.extract_one": "Eşya çıkarıldı",
   "subtitles.basicstorage.block.crate.extract_many": "Yığın çıkarıldı",
-  "subtitles.basicstorage.block.crate.no_match": "İstasyon eşyayı reddediyor"
+  "subtitles.basicstorage.block.crate.no_match": "İstasyon eşyayı reddediyor",
+  "block.basicstorage.crate_connector": "Kasa Bağlayıcı"
 }

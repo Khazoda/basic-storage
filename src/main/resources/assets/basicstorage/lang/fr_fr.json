@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "Piles insérées",
   "subtitles.basicstorage.block.crate.extract_one": "Objet extrait",
   "subtitles.basicstorage.block.crate.extract_many": "Pile extraite",
-  "subtitles.basicstorage.block.crate.no_match": "La station refuse l’objet"
+  "subtitles.basicstorage.block.crate.no_match": "La station refuse l’objet",
+  "block.basicstorage.crate_connector": "Connecteur De Caisses"
 }

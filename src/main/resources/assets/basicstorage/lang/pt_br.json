@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "Pilhas inseridas",
   "subtitles.basicstorage.block.crate.extract_one": "Item extraído",
   "subtitles.basicstorage.block.crate.extract_many": "Pilha extraída",
-  "subtitles.basicstorage.block.crate.no_match": "A estação recusa o item"
+  "subtitles.basicstorage.block.crate.no_match": "A estação recusa o item",
+  "block.basicstorage.crate_connector": "Conector de Caixote"
 }

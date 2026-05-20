@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "已放入多組物品",
   "subtitles.basicstorage.block.crate.extract_one": "已取出物品",
   "subtitles.basicstorage.block.crate.extract_many": "已取出一組物品",
-  "subtitles.basicstorage.block.crate.no_match": "終端拒絕該物品"
+  "subtitles.basicstorage.block.crate.no_match": "終端拒絕該物品",
+  "block.basicstorage.crate_connector": "板條箱連接器"
 }

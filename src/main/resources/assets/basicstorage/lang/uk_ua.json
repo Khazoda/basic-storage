@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "Стоси вставлено",
   "subtitles.basicstorage.block.crate.extract_one": "Предмет витягнуто",
   "subtitles.basicstorage.block.crate.extract_many": "Стос витягнуто",
-  "subtitles.basicstorage.block.crate.no_match": "Станція відхиляє предмет"
+  "subtitles.basicstorage.block.crate.no_match": "Станція відхиляє предмет",
+  "block.basicstorage.crate_connector": "З’єднувач ящиків"
 }
