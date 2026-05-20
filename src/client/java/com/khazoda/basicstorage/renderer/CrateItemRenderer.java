@@ -1,7 +1,6 @@
 package com.khazoda.basicstorage.renderer;
 
 import com.khazoda.basicstorage.Constants;
-import com.khazoda.basicstorage.mixin.RenderSystemAccessor;
 import com.khazoda.basicstorage.registry.DataComponentRegistry;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
 
@@ -10,7 +9,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -20,16 +18,16 @@ import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
-
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicItemRenderer, ModelLoadingPlugin {
 	public static final Identifier CRATE_ID = Identifier.of(Constants.BS_NAMESPACE, "block/crate");
 
-	private static final Quaternionf ITEM_LIGHT_ROTATION_3D = RotationAxis.POSITIVE_X.rotationDegrees(-15).mul(RotationAxis.POSITIVE_Y.rotationDegrees(15));
-	private static final Quaternionf ITEM_LIGHT_ROTATION_FLAT = RotationAxis.POSITIVE_X.rotationDegrees(-45);
+	private static final float CONTENT_X_OFFSET = 0.5f;
+	private static final float CONTENT_Y_OFFSET = 0.5f;
+	private static final float CONTENT_Z_OFFSET = 1.0f;
+
+	private static final float CONTENT_SCALE_XY = 0.7f;
+	private static final float CONTENT_SCALE_Z = 1.0f;
 
 	@Override
 	public void render(ItemStack stack, ModelTransformationMode mode, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay) {
@@ -49,7 +47,7 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 
 	private void renderCrate(ItemStack stack, ModelTransformationMode mode, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay, ItemRenderer itemRenderer, BakedModel crateModel) {
 		matrices.push();
-		matrices.translate(.5, .5, .5);
+		matrices.translate(0.5, 0.5, 0.5);
 		itemRenderer.renderItem(stack, mode, false, matrices, vertexConsumerProvider, light, overlay, crateModel);
 		matrices.pop();
 	}
@@ -58,31 +56,15 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 		if (item.isBlank()) return;
 
 		matrices.push();
-		matrices.translate(0.5f, 0.5f, 1f);
-		matrices.scale(0.7f, 0.7f, 1f);
+		matrices.translate(CONTENT_X_OFFSET, CONTENT_Y_OFFSET, CONTENT_Z_OFFSET);
+		matrices.scale(CONTENT_SCALE_XY, CONTENT_SCALE_XY, CONTENT_SCALE_Z);
 
 		ItemStack stack = item.toStack();
 		BakedModel model = itemRenderer.getModel(stack, null, null, 0);
 
-		Vector3f[] shaderLights = RenderSystemAccessor.getShaderLightDirections();
-		Vector3f oldLight0 = shaderLights[0];
-		Vector3f oldLight1 = shaderLights[1];
+		itemRenderer.renderItem(stack, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV, model);
 
-		try {
-			if (model.isSideLit()) {
-				matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_3D);
-				DiffuseLighting.enableGuiDepthLighting();
-			} else {
-				matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_FLAT);
-				DiffuseLighting.disableGuiDepthLighting();
-			}
-
-			itemRenderer.renderItem(stack, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV, model);
-		} finally {
-			shaderLights[0] = oldLight0;
-			shaderLights[1] = oldLight1;
-			matrices.pop();
-		}
+		matrices.pop();
 	}
 
 	@Override

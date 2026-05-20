@@ -2,14 +2,12 @@ package com.khazoda.basicstorage.renderer;
 
 import com.khazoda.basicstorage.block.CrateBlock;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
-import com.khazoda.basicstorage.mixin.RenderSystemAccessor;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.Orientation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
@@ -27,11 +25,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockEntity> {
-	private static final Quaternionf ITEM_LIGHT_ROTATION_3D = RotationAxis.POSITIVE_X.rotationDegrees(-15).mul(RotationAxis.POSITIVE_Y.rotationDegrees(15));
-	private static final Quaternionf ITEM_LIGHT_ROTATION_FLAT = RotationAxis.POSITIVE_X.rotationDegrees(-45);
 
 	private static final Quaternionf ROT_X_90 = RotationAxis.POSITIVE_X.rotationDegrees(90);
 	private static final Quaternionf ROT_X_180 = RotationAxis.POSITIVE_X.rotationDegrees(180);
@@ -39,6 +34,17 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 	private static final Quaternionf ROT_Y_90 = RotationAxis.POSITIVE_Y.rotationDegrees(90);
 	private static final Quaternionf ROT_Y_180 = RotationAxis.POSITIVE_Y.rotationDegrees(180);
 	private static final Quaternionf ROT_Y_270 = RotationAxis.POSITIVE_Y.rotationDegrees(270);
+
+	private static final float ITEM_Y_OFFSET = 0.125f;
+	private static final float ITEM_SCALE_XY = 0.375f;
+	private static final float ITEM_SCALE_Z = 0.005f;
+
+	private static final float TEXT_Y_OFFSET = 0.21f;
+	private static final float TEXT_Z_OFFSET = -0.01f;
+	private static final float TEXT_SCALE = 0.02f;
+
+	private static final int LABEL_TEXT_COLOR = 0xFFDD99;
+	private static final int LABEL_SHADOW_COLOR = 0x000000;
 
 	private static final int LABEL_RENDER_DISTANCE = 24;
 	private static final double RENDER_DISTANCE_SQUARED = LABEL_RENDER_DISTANCE * LABEL_RENDER_DISTANCE;
@@ -64,7 +70,7 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		Orientation orientation = state.get(CrateBlock.ORIENTATION);
 		Direction dir = orientation.getFacing();
 
-		if (!isVisibleToCamera(pos, dir)) return;
+		if (!isVisibleToCamera(pos, dir, MinecraftClient.getInstance().gameRenderer.getCamera().getPos())) return;
 
 		BlockPos facePos = pos.offset(dir);
 		if (!Block.shouldDrawSide(state, world, pos, dir, facePos)) return;
@@ -128,46 +134,27 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		if (stack.isEmpty()) return;
 
 		matrices.push();
-		matrices.translate(0f, 0.125f, 0f);
-		matrices.scale(0.375f, 0.375f, 0.005f);
+		matrices.translate(0f, ITEM_Y_OFFSET, 0f);
+		matrices.scale(ITEM_SCALE_XY, ITEM_SCALE_XY, ITEM_SCALE_Z);
 
 		BakedModel model = itemRenderer.getModel(stack, world, null, seed);
+		itemRenderer.renderItem(stack, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV, model);
 
-		Vector3f[] shaderLights = RenderSystemAccessor.getShaderLightDirections();
-		Vector3f oldLight0 = shaderLights[0];
-		Vector3f oldLight1 = shaderLights[1];
-
-		try {
-			if (model.isSideLit()) {
-				matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_3D);
-				DiffuseLighting.enableGuiDepthLighting();
-			} else {
-				matrices.peek().getNormalMatrix().rotate(ITEM_LIGHT_ROTATION_FLAT);
-				DiffuseLighting.disableGuiDepthLighting();
-			}
-
-			itemRenderer.renderItem(stack, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV, model);
-		} finally {
-			shaderLights[0] = oldLight0;
-			shaderLights[1] = oldLight1;
-			matrices.pop();
-		}
+		matrices.pop();
 	}
 
 	private void renderText(String formattedCount, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumers) {
 		matrices.push();
 		matrices.multiply(ROT_X_180);
-		matrices.translate(0f, 0.21f, -0.01f);
-		matrices.scale(0.02f, 0.02f, 0.02f);
+		matrices.translate(0f, TEXT_Y_OFFSET, TEXT_Z_OFFSET);
+		matrices.scale(TEXT_SCALE, TEXT_SCALE, TEXT_SCALE);
 
-		textRenderer.draw(formattedCount, -textRenderer.getWidth(formattedCount) / 2f, 0, 0xFFDD99, false, matrices.peek().getPositionMatrix(), vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0x000000, light);
+		textRenderer.draw(formattedCount, -textRenderer.getWidth(formattedCount) / 2f, 0, LABEL_TEXT_COLOR, false, matrices.peek().getPositionMatrix(), vertexConsumers, TextRenderer.TextLayerType.NORMAL, LABEL_SHADOW_COLOR, light);
 
 		matrices.pop();
 	}
 
-	private boolean isVisibleToCamera(BlockPos pos, Direction facing) {
-		Vec3d cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
-
+	private boolean isVisibleToCamera(BlockPos pos, Direction facing, Vec3d cameraPos) {
 		double centerX = pos.getX() + 0.5;
 		double centerY = pos.getY() + 0.5;
 		double centerZ = pos.getZ() + 0.5;
