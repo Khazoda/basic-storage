@@ -1,36 +1,37 @@
 package com.khazoda.basicstorage.util;
 
-import java.text.DecimalFormat;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-
 public class NumberFormatter {
+	public static String toFormattedNumber(long value) {
+		if (value < 0) return "-" + toFormattedNumber(-value);
+		if (value < 1_000) return Long.toString(value);
 
-	private static final DecimalFormat COMMA_FORMAT = new DecimalFormat("###,###,###,###");
+		String raw = Long.toString(value);
+		int firstGroup = raw.length() % 3;
 
-	public static String toFormattedNumber(double value) {
-		return COMMA_FORMAT.format(value);
-	}
+		if (firstGroup == 0) firstGroup = 3;
 
-	private static final NavigableMap<Integer, String> suffixes = new TreeMap<>();
-	static {
-		suffixes.put(1_000, "K");
-		suffixes.put(1_000_000, "M");
-		suffixes.put(1_000_000_000, "B");
+		StringBuilder builder = new StringBuilder(raw.length() + raw.length() / 3);
+		builder.append(raw, 0, firstGroup);
+
+		for (int i = firstGroup; i < raw.length(); i += 3) {
+			builder.append(',').append(raw, i, i + 3);
+		}
+
+		return builder.toString();
 	}
 
 	public static String format(int value) {
-		if (value == Integer.MIN_VALUE) return format(Integer.MIN_VALUE + 1);
+		if (value == Integer.MIN_VALUE) return "-2.1B";
 		if (value < 0) return "-" + format(-value);
-		if (value < 100000) return toFormattedNumber(value);
+		if (value < 100_000) return toFormattedNumber(value);
+		if (value >= 1_000_000_000) return formatSuffix(value, 1_000_000_000, "B");
+		if (value >= 1_000_000) return formatSuffix(value, 1_000_000, "M");
+		return formatSuffix(value, 1_000, "K");
+	}
 
-		Map.Entry<Integer, String> e = suffixes.floorEntry(value);
-		Integer divideBy = e.getKey();
-		String suffix = e.getValue();
-
-		long truncated = value / (divideBy / 10);
-		boolean hasDecimal = truncated < 100 && (truncated / 10d) != ((double) truncated / 10);
-		return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
+	private static String formatSuffix(int value, int divisor, String suffix) {
+		long truncated = value / (divisor / 10L);
+		if (truncated < 100 && truncated % 10 != 0) return (truncated / 10.0) + suffix;
+		return (truncated / 10) + suffix;
 	}
 }

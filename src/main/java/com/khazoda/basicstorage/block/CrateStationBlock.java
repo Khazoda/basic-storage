@@ -7,6 +7,8 @@ import com.khazoda.basicstorage.registry.SoundRegistry;
 
 import com.mojang.serialization.MapCodec;
 
+import it.unimi.dsi.fastutil.longs.LongList;
+
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
@@ -26,6 +28,7 @@ import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -33,7 +36,7 @@ import net.minecraft.world.event.GameEvent;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Map;
 
 import static com.khazoda.basicstorage.storage.CrateStationHelper.notifyNearbyStations;
 
@@ -49,6 +52,7 @@ import static com.khazoda.basicstorage.storage.CrateStationHelper.notifyNearbySt
  * Left Click - Nothing
  * Shift Left Click - Nothing
  */
+@SuppressWarnings("ForLoopReplaceableByForEach")
 public class CrateStationBlock extends BlockWithEntity implements BlockEntityProvider {
 	public static final MapCodec<CrateStationBlock> CODEC = CrateStationBlock.createCodec(CrateStationBlock::new);
 	public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(3.5f)
@@ -87,7 +91,7 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 				inserted = depositInventory(player, cdbe);
 			} else {
 				if (playerStack.isEmpty()) {
-					int connectedCrateCount = cdbe.getConnectedCrates().size();
+					int connectedCrateCount = cdbe.getConnectedCrateCount();
 					player.sendMessage(Text.translatable("message.basicstorage.station.connected_crate_count", connectedCrateCount).withColor(0xDDFF99), true);
 					return ActionResult.SUCCESS;
 				}
@@ -121,15 +125,18 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 		if (stack.isEmpty()) return 0;
 
 		ItemVariant variant = ItemVariant.of(stack);
-		List<BlockPos> compatibleCrates = cdbe.getCrateRegistry().get(variant);
+		LongList compatibleCrates = cdbe.getCrateRegistry().get(variant);
 		if (compatibleCrates == null) return 0;
 
 		World world = cdbe.getWorld();
 		if (world == null) return 0;
 
-		for (BlockPos cratePos : compatibleCrates) {
-			BlockEntity be = world.getBlockEntity(cratePos);
-			if (!(be instanceof CrateBlockEntity crate)) {
+		BlockPos.Mutable mutable = new BlockPos.Mutable();
+
+		for (int i = 0, size = compatibleCrates.size(); i < size; i++) {
+			mutable.set(compatibleCrates.getLong(i));
+
+			if (!(world.getBlockEntity(mutable) instanceof CrateBlockEntity crate)) {
 				cdbe.markCacheForUpdate();
 				continue;
 			}
@@ -148,22 +155,27 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 
 	private static int depositInventory(PlayerEntity player, CrateStationBlockEntity station) {
 		int totalInserted = 0;
-		World world = station.getWorld();
 
+		World world = station.getWorld();
 		if (world == null) return 0;
 
-		for (ItemStack stack : player.getInventory().main) {
+		Map<ItemVariant, LongList> crateRegistry = station.getCrateRegistry();
+		BlockPos.Mutable mutable = new BlockPos.Mutable();
+		DefaultedList<ItemStack> mainInventory = player.getInventory().main;
+
+		for (int slotIndex = 0, invSize = mainInventory.size(); slotIndex < invSize; slotIndex++) {
+			ItemStack stack = mainInventory.get(slotIndex);
 			if (stack.isEmpty()) continue;
 
 			ItemVariant variant = ItemVariant.of(stack);
-			List<BlockPos> compatibleCrates = station.getCrateRegistry().get(variant);
+			LongList compatibleCrates = crateRegistry.get(variant);
 
 			if (compatibleCrates == null || compatibleCrates.isEmpty()) continue;
 
-			for (BlockPos cratePos : compatibleCrates) {
-				BlockEntity be = world.getBlockEntity(cratePos);
+			for (int crateIndex = 0, crateCount = compatibleCrates.size(); crateIndex < crateCount; crateIndex++) {
+				mutable.set(compatibleCrates.getLong(crateIndex));
 
-				if (!(be instanceof CrateBlockEntity crate)) {
+				if (!(world.getBlockEntity(mutable) instanceof CrateBlockEntity crate)) {
 					station.markCacheForUpdate();
 					continue;
 				}
@@ -172,9 +184,9 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 					int moved = (int) crate.storage.insert(variant, stack.getCount(), transaction);
 
 					if (moved > 0) {
+						transaction.commit();
 						stack.decrement(moved);
 						totalInserted += moved;
-						transaction.commit();
 
 						if (stack.isEmpty()) break;
 					}

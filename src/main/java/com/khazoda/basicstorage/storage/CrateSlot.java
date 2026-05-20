@@ -35,42 +35,51 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 
 	@Override
 	public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+		if (maxAmount <= 0 || resource.isBlank()) return 0;
+
 		boolean wasBlank = isBlank();
-		if (!canInsert(resource.toStack(), this, maxAmount > 1)) return 0;
-		if (maxAmount > 1 && !resource.equals(this.getResource()) && !this.isBlank()) return 0;
-		int inserted = (int) Math.min(getCapacity() - count, maxAmount);
-		if (inserted > 0) {
-			updateSnapshots(transaction);
-			count += inserted;
-			if (item.isBlank()) item = resource;
-			if (wasBlank) {
-				transaction.addOuterCloseCallback(result -> {
-					if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
-				});
-			}
-		} else if (inserted < 0) {
+
+		if (wasBlank) {
+			if (!canInsert(resource.toStack(), this, false)) return 0;
+		} else if (!resource.equals(item)) {
 			return 0;
 		}
+
+		int inserted = (int) Math.min((long) Constants.CRATE_MAX_COUNT - count, maxAmount);
+		if (inserted <= 0) return 0;
+
+		updateSnapshots(transaction);
+		count += inserted;
+
+		if (wasBlank) {
+			item = resource;
+
+			transaction.addOuterCloseCallback(result -> {
+				if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
+			});
+		}
+
 		return inserted;
 	}
 
 	@Override
 	public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-		long amountBefore = count;
-		if (!resource.equals(item)) return 0;
+		if (maxAmount <= 0 || !resource.equals(item) || count <= 0) return 0;
+
 		int extracted = (int) Math.min(count, maxAmount);
-		if (extracted > 0) {
-			updateSnapshots(transaction);
-			count -= extracted;
-			if (count == 0) item = ItemVariant.blank();
-			if (amountBefore == extracted) {
-				transaction.addOuterCloseCallback(result -> {
-					if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
-				});
-			}
-		} else if (extracted < 0) {
-			return 0;
+		boolean willBeBlank = count == extracted;
+
+		updateSnapshots(transaction);
+		count -= extracted;
+
+		if (willBeBlank) {
+			item = ItemVariant.blank();
+
+			transaction.addOuterCloseCallback(result -> {
+				if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
+			});
 		}
+
 		return extracted;
 	}
 

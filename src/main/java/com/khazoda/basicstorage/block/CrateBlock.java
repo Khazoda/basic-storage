@@ -46,7 +46,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
@@ -69,6 +68,7 @@ import static java.lang.Math.toIntExact;
  * Left Click - Remove one item
  * Shift Left Click - Remove one stack
  */
+@SuppressWarnings("ForLoopReplaceableByForEach")
 public class CrateBlock extends Block implements BlockEntityProvider {
 	public static final MapCodec<CrateBlock> CODEC = CrateBlock.createCodec(CrateBlock::new);
 	public static final EnumProperty<Orientation> ORIENTATION = Properties.ORIENTATION;
@@ -121,10 +121,9 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 			BlockPos pos = hit.getBlockPos();
 			BlockState state = world.getBlockState(pos);
 
-			if (!(world.getBlockEntity(pos) instanceof CrateBlockEntity cbe)) return ActionResult.PASS;
 			if (state.get(Properties.ORIENTATION).getFacing() != hit.getSide()) return ActionResult.PASS;
-
 			if (world.isClient()) return ActionResult.SUCCESS;
+			if (!(world.getBlockEntity(pos) instanceof CrateBlockEntity cbe)) return ActionResult.PASS;
 
 			ItemStack playerStack = player.getStackInHand(hand);
 			Item usedItem = playerStack.getItem();
@@ -173,23 +172,23 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 	/**
 	 * UseBlockCallback helper method
 	 **/
-	private static int insertMaximum(PlayerEntity player, ItemStack playerStack, CrateSlot slot,
-	                                 Transaction transaction) {
-		/*
-		 * Insert as many items as possible from player's inventory if slot is empty, or
-		 * matches held stack
-		 */
-		if (slot.isBlank() && playerStack.isEmpty()) {
-			return 0;
-		} else if (slot.isBlank() && !playerStack.isEmpty()) {
-			/* Insert into empty crate */
-			int i = (int)slot.insert(ItemVariant.of(playerStack), playerStack.getCount(), transaction);
-			playerStack.decrement(i);
-			return i;
-		} else {
-			/* Insert into crate with items */
-			return (int)StorageUtil.move(PlayerInventoryStorage.of(player), slot, itemVariant -> true, Integer.MAX_VALUE, transaction);
+	private static int insertMaximum(PlayerEntity player, ItemStack playerStack, CrateSlot slot, Transaction transaction) {
+		if (slot.isBlank()) {
+			if (playerStack.isEmpty()) return 0;
+
+			ItemVariant variant = ItemVariant.of(playerStack);
+
+			int insertedHeld = (int) slot.insert(variant, playerStack.getCount(), transaction);
+			playerStack.decrement(insertedHeld);
+
+			int insertedInventory = (int) StorageUtil.move(PlayerInventoryStorage.of(player), slot, itemVariant -> itemVariant.equals(variant), Integer.MAX_VALUE, transaction);
+
+			return insertedHeld + insertedInventory;
 		}
+
+		ItemVariant variant = slot.getResource();
+
+		return (int) StorageUtil.move(PlayerInventoryStorage.of(player), slot, itemVariant -> itemVariant.equals(variant), Integer.MAX_VALUE, transaction);
 	}
 
 	/**
@@ -226,17 +225,15 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 		}
 	}
 
-	public static void extractFromCrate(World world, BlockPos pos, PlayerEntity player) {
+	public static void extractFromCrate(World world, BlockPos pos, PlayerEntity player, Direction hitSide) {
 		if (!player.canModifyBlocks()) return;
 		BlockEntity be = world.getBlockEntity(pos);
 		if (!(be instanceof CrateBlockEntity cbe) || cbe.storage.isBlank()) return;
 
 		BlockState state = world.getBlockState(pos);
-		var hit = BlockUtils.getHitResult(player, pos);
-		if (hit.getType() == HitResult.Type.MISS) return;
 
 		Direction facing = state.get(Properties.ORIENTATION).getFacing();
-		if (facing != hit.getSide()) return;
+		if (facing != hitSide) return;
 
 		try (var t = Transaction.openOuter()) {
 			var item = cbe.storage.getResource();
@@ -262,11 +259,15 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 	@Override
 	public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
 		BlockEntity be = world.getBlockEntity(pos);
-		if (be instanceof CrateBlockEntity cbe) {
-			if (!world.isClient() && player.isCreative() && !cbe.storage.getResource().toStack().isEmpty())
-				getDroppedStacks(state, (ServerWorld) world, pos, cbe, player, player.getStackInHand(Hand.MAIN_HAND))
-						.forEach(stack -> ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), stack));
+
+		if (!world.isClient() && player.isCreative() && be instanceof CrateBlockEntity cbe && !cbe.storage.isBlank()) {
+			List<ItemStack> drops = getDroppedStacks(state, (ServerWorld)world, pos, cbe, player, player.getStackInHand(Hand.MAIN_HAND));
+			for (int i = 0, size = drops.size(); i < size; i++) {
+				ItemStack stack = drops.get(i);
+				ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), stack);
+			}
 		}
+
 		return super.onBreak(world, pos, state, player);
 	}
 
