@@ -15,6 +15,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
@@ -22,6 +23,8 @@ import net.minecraft.util.math.BlockPos;
 
 public class CrateBlockEntity extends BlockEntity {
 	public final CrateSlot storage = new CrateSlot(this);
+
+	private static final String CRATE_STACK_NBT_KEY = "crateStack";
 
 	private ItemVariant cachedDisplayVariant = ItemVariant.blank();
 	private ItemStack cachedDisplayStack = ItemStack.EMPTY;
@@ -63,7 +66,12 @@ public class CrateBlockEntity extends BlockEntity {
 	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		super.readNbt(nbt, registryLookup);
 
-		if (nbt.contains("crateStack", 10)) storage.readNbt(nbt.getCompound("crateStack"), registryLookup);
+		if (nbt.contains(CRATE_STACK_NBT_KEY, NbtElement.COMPOUND_TYPE)) {
+			storage.readNbt(nbt.getCompound(CRATE_STACK_NBT_KEY), registryLookup);
+			return;
+		}
+
+		storage.clear();
 	}
 
 	/**
@@ -72,6 +80,13 @@ public class CrateBlockEntity extends BlockEntity {
 	@Override
 	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
 		NbtCompound nbt = new NbtCompound();
+
+		// This is required because somehow the client doesn't react to empty nbt packets
+		if (storage.isBlank()) {
+			nbt.putBoolean("empty", true);
+			return nbt;
+		}
+
 		writeCrateStorageNbt(nbt, registryLookup);
 		return nbt;
 	}
@@ -114,20 +129,20 @@ public class CrateBlockEntity extends BlockEntity {
 
 		NbtCompound storageNbt = new NbtCompound();
 		storage.writeNbt(storageNbt, registryLookup);
-		nbt.put("crateStack", storageNbt);
+		nbt.put(CRATE_STACK_NBT_KEY, storageNbt);
 	}
 
 	/**
 	 * Gets the ItemStack and caches it for the renderer
 	 */
 	public ItemStack getDisplayStack() {
-		ItemVariant variant = storage.getResource();
-
-		if (variant.isBlank()) {
+		if (storage.isBlank()) {
 			cachedDisplayVariant = ItemVariant.blank();
 			cachedDisplayStack = ItemStack.EMPTY;
 			return ItemStack.EMPTY;
 		}
+
+		ItemVariant variant = storage.getResource();
 
 		if (!variant.equals(cachedDisplayVariant)) {
 			cachedDisplayVariant = variant;
@@ -141,6 +156,12 @@ public class CrateBlockEntity extends BlockEntity {
 	 * Gets the item display amount and caches it for the renderer
 	 */
 	public String getDisplayAmountText() {
+		if (storage.isBlank()) {
+			cachedDisplayAmount = 0;
+			cachedDisplayAmountText = "";
+			return "";
+		}
+
 		int amount = (int)storage.getAmount();
 
 		if (amount != cachedDisplayAmount) {

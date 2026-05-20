@@ -119,11 +119,14 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 		update();
 	}
 
+	@Override
+	public boolean isBlank() {
+		return item.isBlank() || count <= 0;
+	}
+
 	public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		item = ItemVariant.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, registryLookup), nbt.getCompound("item")).result().orElse(ItemVariant.blank());
-
-		long savedCount = nbt.getLong("count");
-		count = Math.clamp(savedCount, 0, Constants.CRATE_MAX_COUNT);
+		count = Math.clamp(nbt.getLong("count"), 0, Constants.CRATE_MAX_COUNT);
 
 		if (item.isBlank() || count == 0) {
 			item = ItemVariant.blank();
@@ -136,9 +139,11 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 		nbt.putLong("count", count);
 	}
 
-	@Override
-	public boolean isBlank() {
-		return isResourceBlank();
+	public void clear() {
+		if (item.isBlank() && count == 0) return;
+
+		item = ItemVariant.blank();
+		count = 0;
 	}
 
 	protected record Snapshot(ResourceAmount<ItemVariant> contents) { }
