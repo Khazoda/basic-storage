@@ -41,12 +41,12 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 		CrateSlotComponent contents = stack.get(DataComponentRegistry.CRATE_CONTENTS);
 		boolean renderContents = mode == ModelTransformationMode.GUI && contents != null;
 
-		renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel, renderContents);
+		renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel);
 
 		if (renderContents) renderCrateContents(itemRenderer, contents.item(), light, matrices, vertexConsumerProvider);
 	}
 
-	private void renderCrate(ItemStack stack, ModelTransformationMode mode, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay, ItemRenderer itemRenderer, BakedModel crateModel, boolean hasContents) {
+	private void renderCrate(ItemStack stack, ModelTransformationMode mode, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay, ItemRenderer itemRenderer, BakedModel crateModel) {
 		matrices.push();
 		matrices.translate(.5, .5, .5);
 		itemRenderer.renderItem(stack, mode, false, matrices, vertexConsumerProvider, light, overlay, crateModel);

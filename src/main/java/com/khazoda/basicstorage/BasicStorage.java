@@ -25,12 +25,16 @@ public class BasicStorage implements ModInitializer {
 		BS_LOG.info("[Basic Storage] Filling crates...");
 
 		PayloadTypeRegistry.playS2C().register(ConfigSyncPayload.ID, ConfigSyncPayload.CODEC);
+
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			boolean serverConfigValue = BasicStorageConfig.getInstance().breakWithAxeOnly();
 			ServerPlayNetworking.send(handler.getPlayer(), new ConfigSyncPayload(serverConfigValue));
 		});
+
 		BasicStorageConfig.getInstance().load();
+
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(Constants.BS_NAMESPACE, "main"), BW_ITEMGROUP);
+
 		BlockRegistry.init();
 		BlockEntityRegistry.init();
 		SoundRegistry.init();

@@ -24,7 +24,7 @@ public class BlockEntityRegistry {
 
 
 	public static void init() {
-		/* Lets crates work with hoppers and other item transfer blocks */
+		// Lets crates work with hoppers and other item transfer blocks
 		ItemStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.storage, CRATE_BLOCK_ENTITY);
 
 		BasicStorage.loadedRegistries += 1;

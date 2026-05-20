@@ -71,7 +71,7 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		matrices.translate(0.5, 0.5, 0.5);
 		switch (orientation) {
 			case NORTH_UP -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
-			case SOUTH_UP -> {}
+			case SOUTH_UP -> { }
 			case EAST_UP  -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
 			case WEST_UP  -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
 			case UP_NORTH -> {
@@ -98,9 +98,7 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
 				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
 			}
-			case DOWN_SOUTH -> {
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
-			}
+			case DOWN_SOUTH -> matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
 			case DOWN_WEST -> {
 				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
 				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));

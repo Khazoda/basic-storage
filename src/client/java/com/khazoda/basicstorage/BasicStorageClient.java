@@ -18,13 +18,13 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 public class BasicStorageClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
-		// Load server config
+		// Load Server Config
 		ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPayload.ID, (payload, context) -> context.client().execute(() -> {
 			BasicStorageConfig.getInstance().setBreakWithAxeOnly(payload.breakWithAxeOnly());
 			Constants.BS_LOG.info("Synced config from server: Axe Only = {}", payload.breakWithAxeOnly());
 		}));
 
-		// Revert to client config
+		// Revert Client Config
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> BasicStorageConfig.getInstance().load());
 
 		BlockEntityRendererFactories.register(BlockEntityRegistry.CRATE_BLOCK_ENTITY, CrateBlockEntityRenderer::new);

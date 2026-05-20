@@ -31,7 +31,6 @@ public class BasicStorageConfig {
 				Files.createDirectories(CONFIG_PATH.getParent());
 				try (Writer writer = Files.newBufferedWriter(CONFIG_PATH)) {
 					writer.write("# Basic Storage Configuration\n\n");
-
 					writer.write("# If true, crates can only be broken using an axe.\n");
 					writer.write("# If false, crates can be broken with anything.\n");
 					writer.write("break_with_axe_only=false\n\n");

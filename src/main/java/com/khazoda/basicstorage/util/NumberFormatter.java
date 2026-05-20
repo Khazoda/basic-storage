@@ -7,9 +7,10 @@ import java.util.TreeMap;
 
 public class NumberFormatter {
 
+	private static final DecimalFormat COMMA_FORMAT = new DecimalFormat("###,###,###,###");
+
 	public static String toFormattedNumber(double value) {
-		DecimalFormat df = new DecimalFormat("###,###,###,###");
-		return df.format(value);
+		return COMMA_FORMAT.format(value);
 	}
 
 	private static final NavigableMap<Integer, String> suffixes = new TreeMap<>();

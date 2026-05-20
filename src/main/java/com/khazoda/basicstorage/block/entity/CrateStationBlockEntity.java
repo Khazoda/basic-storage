@@ -49,7 +49,6 @@ public class CrateStationBlockEntity extends BlockEntity {
 				addDirectionsToExplore(toExplore, queued, current);
 			}
 		}
-		//world.getPlayers().getFirst().sendMessage(Text.literal("Updated cache. New crate number: ".concat(String.valueOf(connectedCrates.size())))); // TODO: Uncomment to debug crate connections
 	}
 
 	private void addDirectionsToExplore(Queue<BlockPos> queue, Set<BlockPos> queued, BlockPos current) {

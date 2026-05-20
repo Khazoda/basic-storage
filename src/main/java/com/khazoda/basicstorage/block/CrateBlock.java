@@ -287,10 +287,6 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 		tooltip.add(contents_line_2);
 	}
 
-	public static Direction getFront(BlockState state) {
-		return state.get(ORIENTATION).getFacing();
-	}
-
 	@Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
 		builder.add(ORIENTATION);
@@ -358,7 +354,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
 	/**
 	 * Comparator Logic
-	 * 1-16 items = signal strength, loops to 1 billion
+	 * 1-16 items = signal strength
 	 */
 	@Override
 	public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
@@ -375,20 +371,18 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 		return CODEC;
 	}
 
-	/**
-	 * Debugging Methods, not for survival gameplay use
-	 */
-	private static ActionResult debugInitOnUseMethod(PlayerEntity player, CrateSlot slot) {
-		try (Transaction t = Transaction.openOuter()) {
-			if (slot.isBlank())
-				return ActionResult.PASS;
-			if (player.isSneaking())
-				slot.extract(slot.getResource(), 10000, t);
-			if (!player.isSneaking())
-				slot.insert(slot.getResource(), 100000, t);
-			t.commit();
-		}
-		slot.update();
-		return ActionResult.SUCCESS;
-	}
+//  DEBUG METHODS
+//	private static ActionResult debugInitOnUseMethod(PlayerEntity player, CrateSlot slot) {
+//		try (Transaction t = Transaction.openOuter()) {
+//			if (slot.isBlank())
+//				return ActionResult.PASS;
+//			if (player.isSneaking())
+//				slot.extract(slot.getResource(), 10000, t);
+//			if (!player.isSneaking())
+//				slot.insert(slot.getResource(), 100000, t);
+//			t.commit();
+//		}
+//		slot.update();
+//		return ActionResult.SUCCESS;
+//	}
 }

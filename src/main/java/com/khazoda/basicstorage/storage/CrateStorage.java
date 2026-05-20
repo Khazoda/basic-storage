@@ -9,7 +9,6 @@ public interface CrateStorage extends Storage<ItemVariant>{
 	CrateBlockEntity getOwner();
 
 	boolean isBlank();
-
 	long getCapacity();
 
 	default void update() {

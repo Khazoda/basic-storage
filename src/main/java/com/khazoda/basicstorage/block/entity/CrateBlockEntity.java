@@ -4,7 +4,9 @@ import com.khazoda.basicstorage.registry.BlockEntityRegistry;
 import com.khazoda.basicstorage.registry.DataComponentRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
+
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -31,7 +33,9 @@ public class CrateBlockEntity extends BlockEntity {
 	public void refresh() {
 		if (world instanceof ServerWorld) {
 			world.getWorldChunk(pos).setNeedsSaving(true);
-			var state = getCachedState();
+
+			BlockState state = getCachedState();
+
 			world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
 			world.updateComparators(pos, state.getBlock());
 		}
@@ -44,7 +48,7 @@ public class CrateBlockEntity extends BlockEntity {
 	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		super.writeNbt(nbt, registryLookup);
 
-		var storageNbt = new NbtCompound();
+		NbtCompound storageNbt = new NbtCompound();
 		storage.writeNbt(storageNbt, registryLookup);
 		nbt.put("crateStack", storageNbt);
 	}
@@ -52,9 +56,7 @@ public class CrateBlockEntity extends BlockEntity {
 	@Override
 	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		super.readNbt(nbt, registryLookup);
-		if (nbt.contains("crateStack", 10)) {
-			storage.readNbt(nbt.getCompound("crateStack"), registryLookup);
-		}
+		if (nbt.contains("crateStack", 10)) storage.readNbt(nbt.getCompound("crateStack"), registryLookup);
 	}
 
 	/**
@@ -62,7 +64,7 @@ public class CrateBlockEntity extends BlockEntity {
 	 */
 	@Override
 	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-		var nbt = new NbtCompound();
+		NbtCompound nbt = new NbtCompound();
 		writeNbt(nbt, registryLookup);
 		return nbt;
 	}
@@ -79,6 +81,7 @@ public class CrateBlockEntity extends BlockEntity {
 	protected void addComponents(ComponentMap.Builder componentMapBuilder) {
 		super.addComponents(componentMapBuilder);
 		if (this.storage.isBlank()) return;
+
 		componentMapBuilder.add(DataComponentRegistry.CRATE_CONTENTS, new CrateSlotComponent(this.storage.getResource(), (int) this.storage.getAmount()));
 	}
 
@@ -86,7 +89,9 @@ public class CrateBlockEntity extends BlockEntity {
 	protected void readComponents(BlockEntity.ComponentsAccess components) {
 		super.readComponents(components);
 		CrateSlotComponent contents = components.getOrDefault(DataComponentRegistry.CRATE_CONTENTS, CrateSlotComponent.DEFAULT);
+
 		if (contents.count() <= 0 || contents.item().isBlank()) return;
+
 		try (Transaction t = Transaction.openOuter()) {
 			if (!this.storage.isBlank()) return;
 			this.storage.insert(contents.item(), contents.count(), t);

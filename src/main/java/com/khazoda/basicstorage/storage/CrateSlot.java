@@ -42,9 +42,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 		if (inserted > 0) {
 			updateSnapshots(transaction);
 			count += inserted;
-			if (item.isBlank()) {
-				item = resource;
-			}
+			if (item.isBlank()) item = resource;
 			if (wasBlank) {
 				transaction.addOuterCloseCallback(result -> {
 					if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
@@ -64,9 +62,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 		if (extracted > 0) {
 			updateSnapshots(transaction);
 			count -= extracted;
-			if (count == 0) {
-				item = ItemVariant.blank();
-			}
+			if (count == 0) item = ItemVariant.blank();
 			if (amountBefore == extracted) {
 				transaction.addOuterCloseCallback(result -> {
 					if (result.wasCommitted() && owner.getWorld() != null) notifyNearbyStations(owner.getWorld(), owner.getPos());
