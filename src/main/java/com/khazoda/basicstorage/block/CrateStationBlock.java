@@ -55,8 +55,12 @@ import static com.khazoda.basicstorage.storage.CrateStationHelper.notifyNearbySt
 @SuppressWarnings("ForLoopReplaceableByForEach")
 public class CrateStationBlock extends BlockWithEntity implements BlockEntityProvider {
 	public static final MapCodec<CrateStationBlock> CODEC = CrateStationBlock.createCodec(CrateStationBlock::new);
-	public static final Settings defaultSettings = Settings.create().sounds(BlockSoundGroup.WOOD).strength(3.5f)
-			.pistonBehavior(PistonBehavior.BLOCK).instrument(NoteBlockInstrument.BASS).mapColor(MapColor.OAK_TAN);
+
+	public static final Settings defaultSettings = Settings.create()
+			.sounds(BlockSoundGroup.WOOD).strength(3.5f)
+			.pistonBehavior(PistonBehavior.BLOCK)
+			.instrument(NoteBlockInstrument.BASS)
+			.mapColor(MapColor.OAK_TAN);
 
 	public CrateStationBlock(Settings settings) {
 		super(settings);

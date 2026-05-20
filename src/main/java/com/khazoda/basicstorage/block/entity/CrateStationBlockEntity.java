@@ -1,6 +1,7 @@
 package com.khazoda.basicstorage.block.entity;
 
 import com.khazoda.basicstorage.registry.BlockEntityRegistry;
+import com.khazoda.basicstorage.registry.BlockRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
 
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
@@ -10,6 +11,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
@@ -46,12 +48,17 @@ public class CrateStationBlockEntity extends BlockEntity {
 		int minZ = pos.getZ() - MAX_RADIUS;
 		int maxZ = pos.getZ() + MAX_RADIUS;
 
-		LongArrayFIFOQueue toExplore = new LongArrayFIFOQueue(256);
-		LongOpenHashSet queued = new LongOpenHashSet(256);
+		// Those can be tweaked if theres a lot of resizing, needs profiling
+		LongArrayFIFOQueue toExplore = new LongArrayFIFOQueue(512);
+		LongOpenHashSet queued = new LongOpenHashSet(1024);
 
 		long start = pos.asLong();
 		toExplore.enqueue(start);
 		queued.add(start);
+
+		Block crateBlock = BlockRegistry.CRATE_BLOCK;
+		Block stationBlock = BlockRegistry.CRATE_STATION_BLOCK;
+		Block connectorBlock = BlockRegistry.CRATE_CONNECTOR_BLOCK;
 
 		BlockPos.Mutable mutable = new BlockPos.Mutable();
 
@@ -59,17 +66,23 @@ public class CrateStationBlockEntity extends BlockEntity {
 			long currentLong = toExplore.dequeueLong();
 
 			mutable.set(currentLong);
+
+			Block currentBlock = world.getBlockState(mutable).getBlock();
+
+			if (currentBlock != crateBlock) {
+				if (currentBlock == stationBlock || currentBlock == connectorBlock) addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
+				continue;
+			}
+
 			BlockEntity be = world.getBlockEntity(mutable);
 
-			if (be instanceof CrateStationBlockEntity) {
-				addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
-			} else if (be instanceof CrateBlockEntity crate) {
-				connectedCrateCount++;
+			if (!(be instanceof CrateBlockEntity crate)) continue;
 
-				if (!crate.storage.isBlank()) registerCrate(currentLong, crate.storage);
+			connectedCrateCount++;
 
-				addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
-			}
+			if (!crate.storage.isBlank()) registerCrate(currentLong, crate.storage);
+
+			addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
 		}
 	}
 

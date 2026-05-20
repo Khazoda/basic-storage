@@ -18,6 +18,7 @@ public class ItemGroupRegistry {
 				.entries((displayContext, entries) -> {
 					entries.add(new ItemStack(BlockRegistry.CRATE_BLOCK));
 					entries.add(new ItemStack(BlockRegistry.CRATE_STATION_BLOCK));
+					entries.add(new ItemStack(BlockRegistry.CRATE_CONNECTOR_BLOCK));
 				}).build();
 	}
 }

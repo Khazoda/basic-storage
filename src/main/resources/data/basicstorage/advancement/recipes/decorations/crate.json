@@ -38,7 +38,10 @@
   "rewards": {
 	"recipes": [
 	  "basicstorage:crate",
-	  "basicstorage:crate_station"
+	  "basicstorage:crate_alt",
+	  "basicstorage:crate_station",
+	  "basicstorage:crate_connector",
+	  "basicstorage:crate_connector_alt"
 	]
   }
 }
