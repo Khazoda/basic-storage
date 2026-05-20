@@ -2,7 +2,13 @@
   "block.basicstorage.crate": "Ящик",
   "message.basicstorage.crate.empty": "Порожньо",
   "basicstorage.itemGroup": "Basic Storage",
-  "block.basicstorage.crate_station": "Станція ящиків",
-  "message.basicstorage.station.connected_crate_count": "• %d підключених ящиків •",
-  "message.basicstorage.station.no_matching_crates": "• Немає відповідних ящиків •"
+  "block.basicstorage.crate_station": "Станція Ящиків",
+  "message.basicstorage.station.connected_crate_count": "• Підключено Ящиків: %d •",
+  "message.basicstorage.station.no_matching_crates": "• Відповідних Ящиків Немає •",
+  "subtitles.basicstorage.block.crate.insert_one": "Предмет вставлено",
+  "subtitles.basicstorage.block.crate.insert_many": "Стос вставлено",
+  "subtitles.basicstorage.block.crate.insert_loads": "Стоси вставлено",
+  "subtitles.basicstorage.block.crate.extract_one": "Предмет витягнуто",
+  "subtitles.basicstorage.block.crate.extract_many": "Стос витягнуто",
+  "subtitles.basicstorage.block.crate.no_match": "Станція відхиляє предмет"
 }

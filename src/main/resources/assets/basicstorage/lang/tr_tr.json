@@ -1,5 +1,14 @@
 {
   "block.basicstorage.crate": "Kasa",
   "message.basicstorage.crate.empty": "Boş",
-  "basicstorage.itemGroup": "Basit Depolama"
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "Kasa İstasyonu",
+  "message.basicstorage.station.connected_crate_count": "• %d Kasa Bağlandı •",
+  "message.basicstorage.station.no_matching_crates": "• Eşleşen Kasa Yok •",
+  "subtitles.basicstorage.block.crate.insert_one": "Eşya yerleştirildi",
+  "subtitles.basicstorage.block.crate.insert_many": "Yığın yerleştirildi",
+  "subtitles.basicstorage.block.crate.insert_loads": "Yığınlar yerleştirildi",
+  "subtitles.basicstorage.block.crate.extract_one": "Eşya çıkarıldı",
+  "subtitles.basicstorage.block.crate.extract_many": "Yığın çıkarıldı",
+  "subtitles.basicstorage.block.crate.no_match": "İstasyon eşyayı reddediyor"
 }

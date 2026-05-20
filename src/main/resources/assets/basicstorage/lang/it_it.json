@@ -2,7 +2,13 @@
   "block.basicstorage.crate": "Cassa",
   "message.basicstorage.crate.empty": "Vuota",
   "basicstorage.itemGroup": "Basic Storage",
-  "block.basicstorage.crate_station": "Stazione casse",
-  "message.basicstorage.station.connected_crate_count": "• %d casse collegate •",
-  "message.basicstorage.station.no_matching_crates": "• Nessuna cassa corrispondente •"
+  "block.basicstorage.crate_station": "Stazione Casse",
+  "message.basicstorage.station.connected_crate_count": "• %d Casse Collegate •",
+  "message.basicstorage.station.no_matching_crates": "• Nessuna Cassa Corrispondente •",
+  "subtitles.basicstorage.block.crate.insert_one": "Oggetto inserito",
+  "subtitles.basicstorage.block.crate.insert_many": "Pila inserita",
+  "subtitles.basicstorage.block.crate.insert_loads": "Pile inserite",
+  "subtitles.basicstorage.block.crate.extract_one": "Oggetto estratto",
+  "subtitles.basicstorage.block.crate.extract_many": "Pila estratta",
+  "subtitles.basicstorage.block.crate.no_match": "La stazione rifiuta l’oggetto"
 }

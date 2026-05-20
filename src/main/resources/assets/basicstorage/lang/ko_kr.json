@@ -1,0 +1,14 @@
+{
+  "block.basicstorage.crate": "크레이트",
+  "message.basicstorage.crate.empty": "비어 있음",
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "크레이트 스테이션",
+  "message.basicstorage.station.connected_crate_count": "• 연결된 크레이트 %d개 •",
+  "message.basicstorage.station.no_matching_crates": "• 일치하는 크레이트 없음 •",
+  "subtitles.basicstorage.block.crate.insert_one": "아이템을 넣었습니다",
+  "subtitles.basicstorage.block.crate.insert_many": "스택을 넣었습니다",
+  "subtitles.basicstorage.block.crate.insert_loads": "스택들을 넣었습니다",
+  "subtitles.basicstorage.block.crate.extract_one": "아이템을 꺼냈습니다",
+  "subtitles.basicstorage.block.crate.extract_many": "스택을 꺼냈습니다",
+  "subtitles.basicstorage.block.crate.no_match": "스테이션이 아이템을 거부합니다"
+}

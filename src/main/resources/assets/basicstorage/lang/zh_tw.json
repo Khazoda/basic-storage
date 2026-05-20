@@ -1,0 +1,14 @@
+{
+  "block.basicstorage.crate": "儲物箱",
+  "message.basicstorage.crate.empty": "空",
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "儲物箱終端",
+  "message.basicstorage.station.connected_crate_count": "• 已連接 %d 個儲物箱 •",
+  "message.basicstorage.station.no_matching_crates": "• 沒有相符的儲物箱 •",
+  "subtitles.basicstorage.block.crate.insert_one": "已放入物品",
+  "subtitles.basicstorage.block.crate.insert_many": "已放入一組物品",
+  "subtitles.basicstorage.block.crate.insert_loads": "已放入多組物品",
+  "subtitles.basicstorage.block.crate.extract_one": "已取出物品",
+  "subtitles.basicstorage.block.crate.extract_many": "已取出一組物品",
+  "subtitles.basicstorage.block.crate.no_match": "終端拒絕該物品"
+}

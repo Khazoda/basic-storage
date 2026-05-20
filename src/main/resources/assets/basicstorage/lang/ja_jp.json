@@ -1,8 +1,14 @@
 {
-  "block.basicstorage.crate": "木箱",
+  "block.basicstorage.crate": "クレート",
   "message.basicstorage.crate.empty": "空",
-  "basicstorage.itemGroup": "ベーシックストレージ",
-  "block.basicstorage.crate_station": "自動仕分けポイント",
-  "message.basicstorage.station.connected_crate_count": "• %d個の木箱が接続されています •",
-  "message.basicstorage.station.no_matching_crates": "• 一致する木箱がありません •"
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "クレートステーション",
+  "message.basicstorage.station.connected_crate_count": "• 接続中のクレート: %d個 •",
+  "message.basicstorage.station.no_matching_crates": "• 一致するクレートなし •",
+  "subtitles.basicstorage.block.crate.insert_one": "アイテムを挿入",
+  "subtitles.basicstorage.block.crate.insert_many": "スタックを挿入",
+  "subtitles.basicstorage.block.crate.insert_loads": "複数スタックを挿入",
+  "subtitles.basicstorage.block.crate.extract_one": "アイテムを取り出した",
+  "subtitles.basicstorage.block.crate.extract_many": "スタックを取り出した",
+  "subtitles.basicstorage.block.crate.no_match": "ステーションがアイテムを拒否"
 }
