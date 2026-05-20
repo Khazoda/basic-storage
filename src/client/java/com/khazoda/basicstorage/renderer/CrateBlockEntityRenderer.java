@@ -3,17 +3,12 @@ package com.khazoda.basicstorage.renderer;
 import com.khazoda.basicstorage.block.CrateBlock;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import com.khazoda.basicstorage.mixin.RenderSystemAccessor;
-import com.khazoda.basicstorage.util.NumberFormatter;
-
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.Orientation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -38,6 +33,16 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 	private static final Quaternionf ITEM_LIGHT_ROTATION_3D = RotationAxis.POSITIVE_X.rotationDegrees(-15).mul(RotationAxis.POSITIVE_Y.rotationDegrees(15));
 	private static final Quaternionf ITEM_LIGHT_ROTATION_FLAT = RotationAxis.POSITIVE_X.rotationDegrees(-45);
 
+	private static final Quaternionf ROT_X_90 = RotationAxis.POSITIVE_X.rotationDegrees(90);
+	private static final Quaternionf ROT_X_180 = RotationAxis.POSITIVE_X.rotationDegrees(180);
+	private static final Quaternionf ROT_X_270 = RotationAxis.POSITIVE_X.rotationDegrees(270);
+	private static final Quaternionf ROT_Y_90 = RotationAxis.POSITIVE_Y.rotationDegrees(90);
+	private static final Quaternionf ROT_Y_180 = RotationAxis.POSITIVE_Y.rotationDegrees(180);
+	private static final Quaternionf ROT_Y_270 = RotationAxis.POSITIVE_Y.rotationDegrees(270);
+
+	private static final int LABEL_RENDER_DISTANCE = 24;
+	private static final double RENDER_DISTANCE_SQUARED = LABEL_RENDER_DISTANCE * LABEL_RENDER_DISTANCE;
+
 	private final ItemRenderer itemRenderer;
 	private final TextRenderer textRenderer;
 
@@ -50,92 +55,82 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 	public void render(CrateBlockEntity be, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
 		if (be.storage.isBlank()) return;
 
-		Orientation orientation = be.getCachedState().get(CrateBlock.ORIENTATION);
-		Direction dir = orientation.getFacing();
-
 		World world = be.getWorld();
 		if (world == null) return;
 
 		BlockPos pos = be.getPos();
-		if (!shouldRenderBE(be, dir)) return;
+		BlockState state = be.getCachedState();
+
+		Orientation orientation = state.get(CrateBlock.ORIENTATION);
+		Direction dir = orientation.getFacing();
+
+		if (!isVisibleToCamera(pos, dir)) return;
+
+		BlockPos facePos = pos.offset(dir);
+		if (!Block.shouldDrawSide(state, world, pos, dir, facePos)) return;
 
 		matrices.push();
 		alignMatricesToOrientation(matrices, orientation);
 
-		renderCrateInfo(be.storage.getResource(), (int)be.storage.getAmount(), matrices, vertexConsumers, WorldRenderer.getLightmapCoordinates(world, pos.offset(dir)), (int)pos.asLong(), pos, world);
+		int faceLight = WorldRenderer.getLightmapCoordinates(world, facePos);
+
+		renderText(be.getDisplayAmountText(), faceLight, matrices, vertexConsumers);
+		renderItem(be.getDisplayStack(), faceLight, matrices, vertexConsumers, world, (int) pos.asLong());
 
 		matrices.pop();
 	}
 
-	protected void alignMatricesToOrientation(MatrixStack matrices, Orientation orientation) {
+	@Override
+	public int getRenderDistance() {
+		return LABEL_RENDER_DISTANCE;
+	}
+
+	private void alignMatricesToOrientation(MatrixStack matrices, Orientation orientation) {
 		matrices.translate(0.5, 0.5, 0.5);
+
 		switch (orientation) {
-			case NORTH_UP -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
+			case NORTH_UP -> matrices.multiply(ROT_Y_180);
 			case SOUTH_UP -> { }
-			case EAST_UP  -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
-			case WEST_UP  -> matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
-			case UP_NORTH -> {
-				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(0));
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
-			}
+			case EAST_UP -> matrices.multiply(ROT_Y_90);
+			case WEST_UP -> matrices.multiply(ROT_Y_270);
+			case UP_NORTH -> matrices.multiply(ROT_X_270);
 			case UP_EAST -> {
-				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
+				matrices.multiply(ROT_Y_270);
+				matrices.multiply(ROT_X_270);
 			}
 			case UP_SOUTH -> {
-				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
+				matrices.multiply(ROT_Y_180);
+				matrices.multiply(ROT_X_270);
 			}
 			case UP_WEST -> {
-				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(270));
+				matrices.multiply(ROT_Y_90);
+				matrices.multiply(ROT_X_270);
 			}
 			case DOWN_NORTH -> {
-				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+				matrices.multiply(ROT_Y_180);
+				matrices.multiply(ROT_X_90);
 			}
 			case DOWN_EAST -> {
-				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90));
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+				matrices.multiply(ROT_Y_90);
+				matrices.multiply(ROT_X_90);
 			}
-			case DOWN_SOUTH -> matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+			case DOWN_SOUTH -> matrices.multiply(ROT_X_90);
 			case DOWN_WEST -> {
-				matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270));
-				matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));
+				matrices.multiply(ROT_Y_270);
+				matrices.multiply(ROT_X_90);
 			}
 		}
+
 		matrices.translate(0, 0, 0.51);
 	}
 
-	public void renderCrateInfo(ItemVariant item, int amount, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed, BlockPos pos, World world) {
-		if (amount == 0) return;
-
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
-		Vec3d playerPos = player == null ? Vec3d.ofCenter(pos) : player.getPos();
-		int distance = 0;
-		if (player != null) {
-			if (player.isUsingSpyglass()) {
-				distance = 100;
-			} else {
-				distance = 40;
-			}
-		}
-		if (pos.isWithinDistance(playerPos, distance)) {
-			renderText(amount, light, matrices, vertexConsumers);
-			renderItem(item, light, matrices, vertexConsumers, world, seed);
-		}
-	}
-
-	public void renderItem(ItemVariant item, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int seed) {
-		if (item.isBlank()) return;
+	private void renderItem(ItemStack stack, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int seed) {
+		if (stack.isEmpty()) return;
 
 		matrices.push();
 		matrices.translate(0f, 0.125f, 0f);
-		matrices.scale(0.5f, 0.5f, 0.5f);
-		matrices.scale(0.75f, 0.75f, 1);
-		matrices.scale(1f, 1f, 0.01f);
+		matrices.scale(0.375f, 0.375f, 0.005f);
 
-		ItemStack stack = item.toStack();
 		BakedModel model = itemRenderer.getModel(stack, world, null, seed);
 
 		Vector3f[] shaderLights = RenderSystemAccessor.getShaderLightDirections();
@@ -159,25 +154,32 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 		}
 	}
 
-	public void renderText(int count, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumers) {
+	private void renderText(String formattedCount, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumers) {
 		matrices.push();
-		matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(180));
+		matrices.multiply(ROT_X_180);
 		matrices.translate(0f, 0.21f, -0.01f);
-
-		String formattedCount = NumberFormatter.format(count);
-
 		matrices.scale(0.02f, 0.02f, 0.02f);
+
 		textRenderer.draw(formattedCount, -textRenderer.getWidth(formattedCount) / 2f, 0, 0xFFDD99, false, matrices.peek().getPositionMatrix(), vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0x000000, light);
+
 		matrices.pop();
 	}
 
-	public final boolean shouldRenderBE(BlockEntity be, Direction facing) {
-		World world = be.getWorld();
-		if (world == null) return false;
+	private boolean isVisibleToCamera(BlockPos pos, Direction facing) {
+		Vec3d cameraPos = MinecraftClient.getInstance().gameRenderer.getCamera().getPos();
 
-		BlockPos pos = be.getPos();
-		BlockState state = be.getCachedState();
+		double centerX = pos.getX() + 0.5;
+		double centerY = pos.getY() + 0.5;
+		double centerZ = pos.getZ() + 0.5;
 
-		return Block.shouldDrawSide(state, world, pos, facing, pos.offset(facing));
+		double dx = cameraPos.x - centerX;
+		double dy = cameraPos.y - centerY;
+		double dz = cameraPos.z - centerZ;
+
+		double dot = dx * facing.getOffsetX() + dy * facing.getOffsetY() + dz * facing.getOffsetZ();
+
+		if (dot <= 0.0) return false;
+
+		return dx * dx + dy * dy + dz * dz <= RENDER_DISTANCE_SQUARED;
 	}
 }

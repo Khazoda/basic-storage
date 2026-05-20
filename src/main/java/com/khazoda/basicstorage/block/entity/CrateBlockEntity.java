@@ -4,13 +4,16 @@ import com.khazoda.basicstorage.registry.BlockEntityRegistry;
 import com.khazoda.basicstorage.registry.DataComponentRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
+import com.khazoda.basicstorage.util.NumberFormatter;
 
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.ComponentMap;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
@@ -19,6 +22,12 @@ import net.minecraft.util.math.BlockPos;
 
 public class CrateBlockEntity extends BlockEntity {
 	public final CrateSlot storage = new CrateSlot(this);
+
+	private ItemVariant cachedDisplayVariant = ItemVariant.blank();
+	private ItemStack cachedDisplayStack = ItemStack.EMPTY;
+
+	private int cachedDisplayAmount = Integer.MIN_VALUE;
+	private String cachedDisplayAmountText = "";
 
 	/**
 	 * Constructor
@@ -47,12 +56,7 @@ public class CrateBlockEntity extends BlockEntity {
 	@Override
 	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
 		super.writeNbt(nbt, registryLookup);
-
-		if (!storage.isBlank()) {
-			NbtCompound storageNbt = new NbtCompound();
-			storage.writeNbt(storageNbt, registryLookup);
-			nbt.put("crateStack", storageNbt);
-		}
+		writeCrateStorageNbt(nbt, registryLookup);
 	}
 
 	@Override
@@ -68,7 +72,7 @@ public class CrateBlockEntity extends BlockEntity {
 	@Override
 	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
 		NbtCompound nbt = new NbtCompound();
-		writeNbt(nbt, registryLookup);
+		writeCrateStorageNbt(nbt, registryLookup);
 		return nbt;
 	}
 
@@ -100,5 +104,50 @@ public class CrateBlockEntity extends BlockEntity {
 			this.storage.insert(contents.item(), contents.count(), t);
 			t.commit();
 		}
+	}
+
+	/**
+	 * NBT Helper
+	 */
+	private void writeCrateStorageNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+		if (storage.isBlank()) return;
+
+		NbtCompound storageNbt = new NbtCompound();
+		storage.writeNbt(storageNbt, registryLookup);
+		nbt.put("crateStack", storageNbt);
+	}
+
+	/**
+	 * Gets the ItemStack and caches it for the renderer
+	 */
+	public ItemStack getDisplayStack() {
+		ItemVariant variant = storage.getResource();
+
+		if (variant.isBlank()) {
+			cachedDisplayVariant = ItemVariant.blank();
+			cachedDisplayStack = ItemStack.EMPTY;
+			return ItemStack.EMPTY;
+		}
+
+		if (!variant.equals(cachedDisplayVariant)) {
+			cachedDisplayVariant = variant;
+			cachedDisplayStack = variant.toStack();
+		}
+
+		return cachedDisplayStack;
+	}
+
+	/**
+	 * Gets the item display amount and caches it for the renderer
+	 */
+	public String getDisplayAmountText() {
+		int amount = (int)storage.getAmount();
+
+		if (amount != cachedDisplayAmount) {
+			cachedDisplayAmount = amount;
+			cachedDisplayAmountText = NumberFormatter.format(amount);
+		}
+
+		return cachedDisplayAmountText;
 	}
 }

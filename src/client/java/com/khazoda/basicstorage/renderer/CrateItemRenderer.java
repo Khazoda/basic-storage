@@ -27,6 +27,7 @@ import org.joml.Vector3f;
 
 public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicItemRenderer, ModelLoadingPlugin {
 	public static final Identifier CRATE_ID = Identifier.of(Constants.BS_NAMESPACE, "block/crate");
+
 	private static final Quaternionf ITEM_LIGHT_ROTATION_3D = RotationAxis.POSITIVE_X.rotationDegrees(-15).mul(RotationAxis.POSITIVE_Y.rotationDegrees(15));
 	private static final Quaternionf ITEM_LIGHT_ROTATION_FLAT = RotationAxis.POSITIVE_X.rotationDegrees(-45);
 
@@ -39,7 +40,7 @@ public class CrateItemRenderer implements BuiltinItemRendererRegistry.DynamicIte
 		BakedModel crateModel = modelManager.getModel(CRATE_ID);
 
 		CrateSlotComponent contents = stack.get(DataComponentRegistry.CRATE_CONTENTS);
-		boolean renderContents = mode == ModelTransformationMode.GUI && contents != null;
+		boolean renderContents = mode == ModelTransformationMode.GUI && contents != null && !contents.item().isBlank();
 
 		renderCrate(stack, mode, matrices, vertexConsumerProvider, light, overlay, itemRenderer, crateModel);
 
