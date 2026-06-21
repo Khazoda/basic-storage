@@ -11,6 +11,7 @@ import com.khazoda.basicstorage.structure.CrateSlotComponent;
 import com.khazoda.basicstorage.util.BlockUtils;
 import com.khazoda.basicstorage.util.NumberFormatter;
 import com.mojang.serialization.MapCodec;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
@@ -150,6 +151,8 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         return ActionResult.PASS;
       if (facing != hit.getSide())
         return ActionResult.PASS;
+      if (world.isClient)
+        return ActionResult.SUCCESS;
 
       CrateBlockEntity cbe = (CrateBlockEntity) be;
       ItemStack playerStack = player.getMainHandStack();
@@ -277,6 +280,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
     Direction facing = state.get(Properties.ORIENTATION).getFacing();
     if (facing != hit.getSide()) return;
+    if (AttackBlockCallback.EVENT.invoker().interact(player, world, Hand.MAIN_HAND, pos, hit.getSide()) == ActionResult.FAIL) return;
 
     try (var t = Transaction.openOuter()) {
       var item = cbe.storage.getResource();

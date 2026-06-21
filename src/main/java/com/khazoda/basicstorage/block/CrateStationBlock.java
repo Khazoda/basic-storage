@@ -75,6 +75,9 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
 
       BlockPos pos = hit.getBlockPos();
       BlockState state = world.getBlockState(pos);
+      if (world.isClient())
+        return ActionResult.SUCCESS;
+
       BlockEntity be = world.getBlockEntity(pos);
 
       if (be == null)
