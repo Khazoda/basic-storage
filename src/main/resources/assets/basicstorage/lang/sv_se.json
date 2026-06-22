@@ -1,8 +1,15 @@
 {
   "block.basicstorage.crate": "Låda",
   "message.basicstorage.crate.empty": "Tom",
-  "basicstorage.itemGroup": "Enkel Förvaring",
-  "block.basicstorage.crate_station": "Låd-station",
-  "message.basicstorage.station.connected_crate_count": "%d Lådor Kopplade",
-  "message.basicstorage.station.no_matching_crates": "Inga Liknande Lådor"
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "Lådstation",
+  "message.basicstorage.station.connected_crate_count": "• %d Lådor Anslutna •",
+  "message.basicstorage.station.no_matching_crates": "• Inga Matchande Lådor •",
+  "subtitles.basicstorage.block.crate.insert_one": "Föremål insatt",
+  "subtitles.basicstorage.block.crate.insert_many": "Stapel insatt",
+  "subtitles.basicstorage.block.crate.insert_loads": "Staplar insatta",
+  "subtitles.basicstorage.block.crate.extract_one": "Föremål uttaget",
+  "subtitles.basicstorage.block.crate.extract_many": "Stapel uttagen",
+  "subtitles.basicstorage.block.crate.no_match": "Stationen avvisar föremålet",
+  "block.basicstorage.crate_connector": "Lådanslutare"
 }

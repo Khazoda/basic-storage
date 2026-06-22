@@ -17,29 +17,33 @@ import net.minecraft.util.Identifier;
 import static com.khazoda.basicstorage.Constants.BS_LOG;
 
 public class BasicStorage implements ModInitializer {
-  public static int loadedRegistries = 0;
-  public static final ItemGroup BW_ITEMGROUP = ItemGroupRegistry.createItemGroup();
+	public static int loadedRegistries = 0;
+	public static final ItemGroup BW_ITEMGROUP = ItemGroupRegistry.createItemGroup();
 
-  @Override
-  public void onInitialize() {
-    BS_LOG.info("[Basic Storage] Filling crates...");
+	@Override
+	public void onInitialize() {
+		BS_LOG.info("[Basic Storage] Filling crates...");
 
-    PayloadTypeRegistry.playS2C().register(ConfigSyncPayload.ID, ConfigSyncPayload.CODEC);
-    ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-      boolean serverConfigValue = BasicStorageConfig.getInstance().breakWithAxeOnly();
-      ServerPlayNetworking.send(handler.getPlayer(), new ConfigSyncPayload(serverConfigValue));
-    });
-    BasicStorageConfig.getInstance().load();
-    Registry.register(Registries.ITEM_GROUP, Identifier.of(Constants.BS_NAMESPACE), BW_ITEMGROUP);
-    BlockRegistry.init();
-    BlockEntityRegistry.init();
-    SoundRegistry.init();
-    EventRegistry.init();
-    DataComponentRegistry.init();
+		PayloadTypeRegistry.playS2C().register(ConfigSyncPayload.ID, ConfigSyncPayload.CODEC);
 
-    ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
-    ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			boolean serverConfigValue = BasicStorageConfig.getInstance().breakWithAxeOnly();
+			ServerPlayNetworking.send(handler.getPlayer(), new ConfigSyncPayload(serverConfigValue));
+		});
 
-    BS_LOG.info("[Basic Storage] {}/6 registry crates filled!", loadedRegistries);
-  }
+		BasicStorageConfig.getInstance().load();
+
+		Registry.register(Registries.ITEM_GROUP, Identifier.of(Constants.BS_NAMESPACE, "main"), BW_ITEMGROUP);
+
+		BlockRegistry.init();
+		BlockEntityRegistry.init();
+		SoundRegistry.init();
+		EventRegistry.init();
+		DataComponentRegistry.init();
+
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
+
+		BS_LOG.info("[Basic Storage] {}/6 registry crates filled!", loadedRegistries);
+	}
 }

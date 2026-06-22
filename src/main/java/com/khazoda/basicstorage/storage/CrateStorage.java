@@ -1,17 +1,17 @@
 package com.khazoda.basicstorage.storage;
 
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
+
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
 public interface CrateStorage extends Storage<ItemVariant>{
-  CrateBlockEntity getOwner();
+	CrateBlockEntity getOwner();
 
-  boolean isBlank();
+	boolean isBlank();
+	long getCapacity();
 
-  long getCapacity();
-
-  default void update() {
-    getOwner().refresh();
-  }
+	default void update() {
+		getOwner().refresh();
+	}
 }

@@ -10,5 +10,6 @@
   "subtitles.basicstorage.block.crate.insert_loads": "Stacks inserted",
   "subtitles.basicstorage.block.crate.extract_one": "Item extracted",
   "subtitles.basicstorage.block.crate.extract_many": "Stack extracted",
-  "subtitles.basicstorage.block.crate.no_match": "Station refuses item"
+  "subtitles.basicstorage.block.crate.no_match": "Station refuses item",
+  "block.basicstorage.crate_connector": "Crate Connector"
 }

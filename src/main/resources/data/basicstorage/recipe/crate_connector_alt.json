@@ -1,9 +1,8 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-	"#/#",
-	"/ /",
-	"#/#"
+	"#/",
+	"/#"
   ],
   "key": {
 	"#": {
@@ -14,7 +13,7 @@
 	}
   },
   "result": {
-	"id": "basicstorage:crate",
+	"id": "basicstorage:crate_connector",
 	"count": 1
   }
 }

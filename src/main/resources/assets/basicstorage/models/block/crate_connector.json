@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-	"all": "basicstorage:block/crate_station"
+	"all": "basicstorage:block/crate_connector"
   }
 }
