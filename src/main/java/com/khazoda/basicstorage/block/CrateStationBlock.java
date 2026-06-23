@@ -73,7 +73,8 @@ public class CrateStationBlock extends BlockWithEntity implements BlockEntityPro
     UseBlockCallback.EVENT.register((PlayerEntity player, World world, Hand hand, BlockHitResult hit) -> {
       if (!world.getBlockState(hit.getBlockPos()).isOf(BlockRegistry.CRATE_STATION_BLOCK)) return ActionResult.PASS;
       if (!player.canModifyBlocks() || player.isSpectator()) return ActionResult.PASS;
-      if (player.getStackInHand(hand).isOf(BlockRegistry.CRATE_BLOCK.asItem()) && player.isSneaking())
+      ItemStack itemInHand = player.getStackInHand(hand);
+      if ((itemInHand.isOf(BlockRegistry.CRATE_BLOCK.asItem()) || itemInHand.isOf(BlockRegistry.CRATE_CONNECTOR_BLOCK.asItem())) && player.isSneaking())
         return ActionResult.PASS;
       if (world.isClient()) return ActionResult.SUCCESS;
 
