@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
-  "id": "basic-storage",
+  "id": "basicstorage",
   "version": "${version}",
   "name": "Basic Storage",
   "description": "Vanilla-friendly mass item storage",
   "authors": [
-	"Khazoda"
+	"khazoda"
   ],
   "contact": {
-	"homepage": "https://khazoda.com#basic-storage",
-	"sources": "https://github.com/Khazoda/basic-storage",
-	"issues": "https://github.com/Khazoda/basic-storage/issues"
+	"homepage": "https://khazoda.com#basicstorage",
+	"sources": "https://github.com/khazoda/basicstorage-legacy",
+	"issues": "https://github.com/khazoda/basicstorage-legacy/issues"
   },
   "license": "MIT",
-  "icon": "assets/basicstorage/icon.png",
+  "icon": "basicstorage_icon.png",
   "environment": "*",
   "entrypoints": {
 	"main": [
@@ -27,7 +27,7 @@
 	]
   },
   "mixins": [
-	"basic-storage.mixins.json"
+    "basicstorage.mixins.json"
   ],
   "depends": {
 	"fabricloader": ">=${loader_version}",
