@@ -1,59 +1,57 @@
 {
   "variants": {
-	"orientation=north_up": {
-	  "model": "basicstorage:block/crate"
-	},
-	"orientation=east_up": {
-	  "model": "basicstorage:block/crate",
-	  "y": 90
-	},
-	"orientation=south_up": {
-	  "model": "basicstorage:block/crate",
-	  "y": 180
-	},
-	"orientation=west_up": {
-	  "model": "basicstorage:block/crate",
-	  "y": 270
-	},
-
-	"orientation=up_north": {
-	  "model": "basicstorage:block/crate",
-	  "x": 270,
-	  "y": 180
-	},
-	"orientation=up_east": {
-	  "model": "basicstorage:block/crate",
-	  "x": 270,
-	  "y": 270
-	},
-	"orientation=up_south": {
-	  "model": "basicstorage:block/crate",
-	  "x": 270
-	},
-	"orientation=up_west": {
-	  "model": "basicstorage:block/crate",
-	  "x": 270,
-	  "y": 90
-	},
-
-	"orientation=down_north": {
-	  "model": "basicstorage:block/crate",
-	  "x": 90
-	},
-	"orientation=down_east": {
-	  "model": "basicstorage:block/crate",
-	  "x": 90,
-	  "y": 90
-	},
-	"orientation=down_south": {
-	  "model": "basicstorage:block/crate",
-	  "x": 90,
-	  "y": 180
-	},
-	"orientation=down_west": {
-	  "model": "basicstorage:block/crate",
-	  "x": 90,
-	  "y": 270
-	}
+    "orientation=north_up": {
+      "model": "basicstorage:block/crate"
+    },
+    "orientation=east_up": {
+      "model": "basicstorage:block/crate",
+      "y": 90
+    },
+    "orientation=south_up": {
+      "model": "basicstorage:block/crate",
+      "y": 180
+    },
+    "orientation=west_up": {
+      "model": "basicstorage:block/crate",
+      "y": 270
+    },
+    "orientation=up_north": {
+      "model": "basicstorage:block/crate",
+      "x": 270,
+      "y": 180
+    },
+    "orientation=up_east": {
+      "model": "basicstorage:block/crate",
+      "x": 270,
+      "y": 270
+    },
+    "orientation=up_south": {
+      "model": "basicstorage:block/crate",
+      "x": 270
+    },
+    "orientation=up_west": {
+      "model": "basicstorage:block/crate",
+      "x": 270,
+      "y": 90
+    },
+    "orientation=down_north": {
+      "model": "basicstorage:block/crate",
+      "x": 90
+    },
+    "orientation=down_east": {
+      "model": "basicstorage:block/crate",
+      "x": 90,
+      "y": 90
+    },
+    "orientation=down_south": {
+      "model": "basicstorage:block/crate",
+      "x": 90,
+      "y": 180
+    },
+    "orientation=down_west": {
+      "model": "basicstorage:block/crate",
+      "x": 90,
+      "y": 270
+    }
   }
 }

@@ -357,7 +357,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
   /**
    * Comparator Logic
-   * 1-16 items = signal strength
+   * 1-16 items = signal strength, loops
    */
   @Override
   public int getComparatorOutput(BlockState state, World world, BlockPos pos) {

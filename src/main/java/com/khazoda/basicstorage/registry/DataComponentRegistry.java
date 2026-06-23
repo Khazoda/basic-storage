@@ -1,6 +1,5 @@
 package com.khazoda.basicstorage.registry;
 
-import com.khazoda.basicstorage.BasicStorage;
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
 import net.minecraft.component.ComponentType;
@@ -17,6 +16,5 @@ public class DataComponentRegistry {
 
   public static void init() {
     Registry.register(Registries.DATA_COMPONENT_TYPE, Identifier.of(Constants.BS_NAMESPACE, "crate_contents"), CRATE_CONTENTS);
-    BasicStorage.loadedRegistries += 1;
   }
 }

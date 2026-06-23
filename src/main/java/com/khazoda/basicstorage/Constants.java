@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Constants {
-  public static final String BS_VERSION = "1.3.0"; // Change version every update
   public static final String BS_NAMESPACE = "basicstorage";
   public static final String BS_NAME = "Basic Storage";
   public static final Logger BS_LOG = LoggerFactory.getLogger(BS_NAME);

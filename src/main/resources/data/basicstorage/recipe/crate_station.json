@@ -1,29 +1,27 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-	"#R#",
-	"/E/",
-	"#H#"
+    "#R#", "/E/", "#H#"
   ],
   "key": {
-	"#": {
-	  "tag": "minecraft:planks"
-	},
-	"R": {
-	  "item": "minecraft:redstone"
-	},
-	"/": {
-	  "item": "minecraft:stick"
-	},
-	"E": {
-	  "item": "minecraft:ender_eye"
-	},
-	"H": {
-	  "item": "minecraft:hopper"
-	}
+    "#": {
+      "tag": "minecraft:planks"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "/": {
+      "item": "minecraft:stick"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    }
   },
   "result": {
-	"id": "basicstorage:crate_station",
-	"count": 1
+    "id": "basicstorage:crate_station",
+    "count": 1
   }
 }

@@ -1,24 +1,24 @@
 {
   "type": "minecraft:block",
   "pools": [
-	{
-	  "bonus_rolls": 0.0,
-	  "entries": [
-		{
-		  "type": "minecraft:item",
-		  "functions": [
-			{
-			  "function": "minecraft:copy_components",
-			  "include": [
-				"basicstorage:crate_contents"
-			  ],
-			  "source": "block_entity"
-			}
-		  ],
-		  "name": "basicstorage:crate"
-		}
-	  ],
-	  "rolls": 1.0
-	}
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "include": [
+                "basicstorage:crate_contents"
+              ],
+              "source": "block_entity"
+            }
+          ],
+          "name": "basicstorage:crate"
+        }
+      ],
+      "rolls": 1.0
+    }
   ]
 }

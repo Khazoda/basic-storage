@@ -40,7 +40,7 @@ public class BasicStorageConfig {
       try (Reader reader = Files.newBufferedReader(CONFIG_PATH)) {
         properties.load(reader);
       }
-      BS_LOG.info("[Basic Storage] Config loaded successfully");
+//      BS_LOG.info("[Basic Storage] Config loaded successfully");
     } catch (IOException e) {
       BS_LOG.error("[Basic Storage] Failed to load config: {}", e.getMessage());
     }

@@ -3,9 +3,9 @@
   "package": "com.khazoda.basicstorage.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-	"ServerPlayerInteractionManagerMixin"
+    "ServerPlayerInteractionManagerMixin"
   ],
   "injectors": {
-	"defaultRequire": 1
+    "defaultRequire": 1
   }
 }

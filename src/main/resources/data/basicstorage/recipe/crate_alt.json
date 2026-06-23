@@ -1,20 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-	"/#/",
-	"# #",
-	"/#/"
+    "/#/", "# #", "/#/"
   ],
   "key": {
-	"#": {
-	  "tag": "minecraft:planks"
-	},
-	"/": {
-	  "item": "minecraft:stick"
-	}
+    "#": {
+      "tag": "minecraft:planks"
+    },
+    "/": {
+      "item": "minecraft:stick"
+    }
   },
   "result": {
-	"id": "basicstorage:crate",
-	"count": 1
+    "id": "basicstorage:crate",
+    "count": 1
   }
 }

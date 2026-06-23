@@ -17,13 +17,10 @@ import net.minecraft.util.Identifier;
 import static com.khazoda.basicstorage.Constants.BS_LOG;
 
 public class BasicStorage implements ModInitializer {
-  public static int loadedRegistries = 0;
   public static final ItemGroup BW_ITEMGROUP = ItemGroupRegistry.createItemGroup();
 
   @Override
   public void onInitialize() {
-    BS_LOG.info("[Basic Storage] Filling crates...");
-
     PayloadTypeRegistry.playS2C().register(ConfigSyncPayload.ID, ConfigSyncPayload.CODEC);
 
     ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -44,6 +41,6 @@ public class BasicStorage implements ModInitializer {
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
     ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(content -> content.addAfter(Items.BARREL, BlockRegistry.CRATE_BLOCK, BlockRegistry.CRATE_STATION_BLOCK));
 
-    BS_LOG.info("[Basic Storage] {}/6 registry crates filled!", loadedRegistries);
+    BS_LOG.info("- Basic Storage Loaded -");
   }
 }

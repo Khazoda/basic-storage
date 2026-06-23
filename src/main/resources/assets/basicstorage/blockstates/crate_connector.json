@@ -1,21 +1,18 @@
 {
   "variants": {
-	"": [
-	  {
-		"model": "basicstorage:block/crate_connector"
-	  },
-	  {
-		"model": "basicstorage:block/crate_connector",
-		"y": 90
-	  },
-	  {
-		"model": "basicstorage:block/crate_connector",
-		"y": 180
-	  },
-	  {
-		"model": "basicstorage:block/crate_connector",
-		"y": 270
-	  }
-	]
+    "": [
+      {
+        "model": "basicstorage:block/crate_connector"
+      }, {
+        "model": "basicstorage:block/crate_connector",
+        "y": 90
+      }, {
+        "model": "basicstorage:block/crate_connector",
+        "y": 180
+      }, {
+        "model": "basicstorage:block/crate_connector",
+        "y": 270
+      }
+    ]
   }
 }
