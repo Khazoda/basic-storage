@@ -115,6 +115,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
 
         if (inserted == 0) {
           transaction.abort();
+          if (slot.getAmount() >= slot.getCapacity()) return rejectFullCrate(player);
           return ActionResult.CONSUME_PARTIAL;
         }
 
@@ -166,6 +167,12 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     ItemVariant variant = slot.getResource();
 
     return (int) StorageUtil.move(PlayerInventoryStorage.of(player), slot, itemVariant -> itemVariant.equals(variant), Integer.MAX_VALUE, transaction);
+  }
+
+  private static ActionResult rejectFullCrate(PlayerEntity player) {
+    player.sendMessage(Text.translatable("message.basicstorage.crate.full").withColor(0xFF9999), true);
+    player.playSoundToPlayer(SoundEvents.BLOCK_WOOD_HIT, SoundCategory.BLOCKS, 0.75f, 1f);
+    return ActionResult.CONSUME_PARTIAL;
   }
 
   /**

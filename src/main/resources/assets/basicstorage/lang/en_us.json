@@ -1,6 +1,7 @@
 {
   "block.basicstorage.crate": "Crate",
   "message.basicstorage.crate.empty": "Empty",
+  "message.basicstorage.crate.full": "Crate is Full",
   "basicstorage.itemGroup": "Basic Storage",
   "block.basicstorage.crate_station": "Crate Station",
   "message.basicstorage.station.connected_crate_count": "• %d Crates Connected •",

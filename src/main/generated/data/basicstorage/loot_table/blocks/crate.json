@@ -10,7 +10,7 @@
             {
               "function": "minecraft:copy_components",
               "include": [
-                "basicstorage:crate_contents"
+                "basicstorage:crate_contents", "minecraft:max_stack_size"
               ],
               "source": "block_entity"
             }

@@ -6,11 +6,11 @@ import com.khazoda.basicstorage.storage.CrateSlot;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
 import com.khazoda.basicstorage.util.NumberFormatter;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -101,6 +101,7 @@ public class CrateBlockEntity extends BlockEntity {
     if (this.storage.isBlank()) return;
 
     componentMapBuilder.add(DataComponentRegistry.CRATE_CONTENTS, new CrateSlotComponent(this.storage.getResource(), (int) this.storage.getAmount()));
+    componentMapBuilder.add(DataComponentTypes.MAX_STACK_SIZE, 1);
   }
 
   @Override
@@ -108,13 +109,9 @@ public class CrateBlockEntity extends BlockEntity {
     super.readComponents(components);
     CrateSlotComponent contents = components.getOrDefault(DataComponentRegistry.CRATE_CONTENTS, CrateSlotComponent.DEFAULT);
 
-    if (contents.count() <= 0 || contents.item().isBlank()) return;
+    if (!this.storage.isBlank() || contents.count() <= 0 || contents.item().isBlank()) return;
 
-    try (Transaction t = Transaction.openOuter()) {
-      if (!this.storage.isBlank()) return;
-      this.storage.insert(contents.item(), contents.count(), t);
-      t.commit();
-    }
+    this.storage.setStoredContents(contents.item(), contents.count());
   }
 
   /**

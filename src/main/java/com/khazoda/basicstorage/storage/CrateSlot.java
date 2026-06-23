@@ -1,5 +1,6 @@
 package com.khazoda.basicstorage.storage;
 
+import com.khazoda.basicstorage.BasicStorageConfig;
 import com.khazoda.basicstorage.Constants;
 import com.khazoda.basicstorage.block.entity.CrateBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -8,6 +9,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
@@ -42,7 +44,8 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
       return 0;
     }
 
-    int inserted = (int) Math.min((long) Constants.CRATE_MAX_COUNT - count, maxAmount);
+    int capacity = BasicStorageConfig.getInstance().crateMaxCapacity();
+    int inserted = (int) Math.min((long) capacity - count, maxAmount);
     if (inserted <= 0) return 0;
 
     updateSnapshots(transaction);
@@ -97,7 +100,7 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
 
   @Override
   public long getCapacity() {
-    return Constants.CRATE_MAX_COUNT;
+    return Math.max(count, BasicStorageConfig.getInstance().crateMaxCapacity());
   }
 
   @Override
@@ -122,13 +125,20 @@ public final class CrateSlot extends SnapshotParticipant<CrateSlot.Snapshot>
   }
 
   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-    item = ItemVariant.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, registryLookup), nbt.getCompound("item")).result().orElse(ItemVariant.blank());
-    count = Math.clamp(nbt.getLong("count"), 0, Constants.CRATE_MAX_COUNT);
+    RegistryOps<NbtElement> ops = RegistryOps.of(NbtOps.INSTANCE, registryLookup);
+    ItemVariant variant = ItemVariant.CODEC.parse(ops, nbt.getCompound("item")).result().orElse(ItemVariant.blank());
 
-    if (item.isBlank() || count == 0) {
-      item = ItemVariant.blank();
-      count = 0;
+    setStoredContents(variant, nbt.getLong("count"));
+  }
+
+  public void setStoredContents(ItemVariant item, long count) {
+    if (item.isBlank() || count <= 0) {
+      clear();
+      return;
     }
+
+    this.item = item;
+    this.count = Math.clamp(count, 0, Constants.CRATE_MAX_COUNT);
   }
 
   public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
