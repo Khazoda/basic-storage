@@ -3,14 +3,11 @@ package com.khazoda.basicstorage.block.entity;
 import com.khazoda.basicstorage.registry.BlockEntityRegistry;
 import com.khazoda.basicstorage.registry.BlockRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
-
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -20,123 +17,121 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CrateStationBlockEntity extends BlockEntity {
-	private final Map<ItemVariant, LongList> crateRegistry = new HashMap<>();
+  public static final int MAX_RADIUS = 16;
+  private static final int[] OFFSET_X = {0, 0, 0, 0, -1, 1};
+  private static final int[] OFFSET_Y = {-1, 1, 0, 0, 0, 0};
+  private static final int[] OFFSET_Z = {0, 0, -1, 1, 0, 0};
+  private final Map<ItemVariant, LongList> crateRegistry = new HashMap<>();
+  private int connectedCrateCount = 0;
+  private boolean needsCacheUpdate = true;
 
-	private static final int[] OFFSET_X = { 0, 0, 0, 0, -1, 1 };
-	private static final int[] OFFSET_Y = { -1, 1, 0, 0, 0, 0 };
-	private static final int[] OFFSET_Z = { 0, 0, -1, 1, 0, 0 };
+  public CrateStationBlockEntity(BlockPos pos, BlockState state) {
+    super(BlockEntityRegistry.CRATE_STATION_BLOCK_ENTITY, pos, state);
+  }
 
-	public static final int MAX_RADIUS = 16;
+  private void buildCrateCache() {
+    if (world == null || world.isClient) return;
 
-	private int connectedCrateCount = 0;
-	private boolean needsCacheUpdate = true;
+    crateRegistry.clear();
+    connectedCrateCount = 0;
 
-	public CrateStationBlockEntity(BlockPos pos, BlockState state) {
-		super(BlockEntityRegistry.CRATE_STATION_BLOCK_ENTITY, pos, state);
-	}
+    int minX = pos.getX() - MAX_RADIUS;
+    int maxX = pos.getX() + MAX_RADIUS;
+    int minY = pos.getY() - MAX_RADIUS;
+    int maxY = pos.getY() + MAX_RADIUS;
+    int minZ = pos.getZ() - MAX_RADIUS;
+    int maxZ = pos.getZ() + MAX_RADIUS;
 
-	private void buildCrateCache() {
-		if (world == null || world.isClient) return;
+    // Those can be tweaked if theres a lot of resizing, needs profiling
+    LongArrayFIFOQueue toExplore = new LongArrayFIFOQueue(512);
+    LongOpenHashSet queued = new LongOpenHashSet(1024);
 
-		crateRegistry.clear();
-		connectedCrateCount = 0;
+    long start = pos.asLong();
+    toExplore.enqueue(start);
+    queued.add(start);
 
-		int minX = pos.getX() - MAX_RADIUS;
-		int maxX = pos.getX() + MAX_RADIUS;
-		int minY = pos.getY() - MAX_RADIUS;
-		int maxY = pos.getY() + MAX_RADIUS;
-		int minZ = pos.getZ() - MAX_RADIUS;
-		int maxZ = pos.getZ() + MAX_RADIUS;
+    Block crateBlock = BlockRegistry.CRATE_BLOCK;
+    Block stationBlock = BlockRegistry.CRATE_STATION_BLOCK;
+    Block connectorBlock = BlockRegistry.CRATE_CONNECTOR_BLOCK;
 
-		// Those can be tweaked if theres a lot of resizing, needs profiling
-		LongArrayFIFOQueue toExplore = new LongArrayFIFOQueue(512);
-		LongOpenHashSet queued = new LongOpenHashSet(1024);
+    BlockPos.Mutable mutable = new BlockPos.Mutable();
 
-		long start = pos.asLong();
-		toExplore.enqueue(start);
-		queued.add(start);
+    while (!toExplore.isEmpty()) {
+      long currentLong = toExplore.dequeueLong();
 
-		Block crateBlock = BlockRegistry.CRATE_BLOCK;
-		Block stationBlock = BlockRegistry.CRATE_STATION_BLOCK;
-		Block connectorBlock = BlockRegistry.CRATE_CONNECTOR_BLOCK;
+      mutable.set(currentLong);
 
-		BlockPos.Mutable mutable = new BlockPos.Mutable();
+      Block currentBlock = world.getBlockState(mutable).getBlock();
 
-		while (!toExplore.isEmpty()) {
-			long currentLong = toExplore.dequeueLong();
+      if (currentBlock != crateBlock) {
+        if (currentBlock == stationBlock || currentBlock == connectorBlock)
+          addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
+        continue;
+      }
 
-			mutable.set(currentLong);
+      BlockEntity be = world.getBlockEntity(mutable);
 
-			Block currentBlock = world.getBlockState(mutable).getBlock();
+      if (!(be instanceof CrateBlockEntity crate)) continue;
 
-			if (currentBlock != crateBlock) {
-				if (currentBlock == stationBlock || currentBlock == connectorBlock) addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
-				continue;
-			}
+      connectedCrateCount++;
 
-			BlockEntity be = world.getBlockEntity(mutable);
+      if (!crate.storage.isBlank()) registerCrate(currentLong, crate.storage);
 
-			if (!(be instanceof CrateBlockEntity crate)) continue;
+      addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
+    }
+  }
 
-			connectedCrateCount++;
+  private void addDirectionsToExplore(LongArrayFIFOQueue queue, LongOpenHashSet queued, long current, int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+    int x = BlockPos.unpackLongX(current);
+    int y = BlockPos.unpackLongY(current);
+    int z = BlockPos.unpackLongZ(current);
 
-			if (!crate.storage.isBlank()) registerCrate(currentLong, crate.storage);
+    for (int i = 0; i < 6; i++) {
+      int nextX = x + OFFSET_X[i];
+      int nextY = y + OFFSET_Y[i];
+      int nextZ = z + OFFSET_Z[i];
 
-			addDirectionsToExplore(toExplore, queued, currentLong, minX, maxX, minY, maxY, minZ, maxZ);
-		}
-	}
+      if (nextX < minX || nextX > maxX) continue;
+      if (nextY < minY || nextY > maxY) continue;
+      if (nextZ < minZ || nextZ > maxZ) continue;
 
-	private void addDirectionsToExplore(LongArrayFIFOQueue queue, LongOpenHashSet queued, long current, int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
-		int x = BlockPos.unpackLongX(current);
-		int y = BlockPos.unpackLongY(current);
-		int z = BlockPos.unpackLongZ(current);
+      long next = BlockPos.asLong(nextX, nextY, nextZ);
 
-		for (int i = 0; i < 6; i++) {
-			int nextX = x + OFFSET_X[i];
-			int nextY = y + OFFSET_Y[i];
-			int nextZ = z + OFFSET_Z[i];
+      if (queued.add(next)) queue.enqueue(next);
+    }
+  }
 
-			if (nextX < minX || nextX > maxX) continue;
-			if (nextY < minY || nextY > maxY) continue;
-			if (nextZ < minZ || nextZ > maxZ) continue;
+  private void registerCrate(long cratePos, CrateSlot storage) {
+    ItemVariant variant = storage.getResource();
+    crateRegistry.computeIfAbsent(variant, k -> new LongArrayList()).add(cratePos);
+  }
 
-			long next = BlockPos.asLong(nextX, nextY, nextZ);
+  @Override
+  public void markRemoved() {
+    crateRegistry.clear();
+    connectedCrateCount = 0;
+    super.markRemoved();
+  }
 
-			if (queued.add(next)) queue.enqueue(next);
-		}
-	}
+  private void ensureCache() {
+    if (!needsCacheUpdate) return;
+    if (world == null || world.isClient) return;
 
-	private void registerCrate(long cratePos, CrateSlot storage) {
-		ItemVariant variant = storage.getResource();
-		crateRegistry.computeIfAbsent(variant, k -> new LongArrayList()).add(cratePos);
-	}
+    buildCrateCache();
+    needsCacheUpdate = false;
+  }
 
-	@Override
-	public void markRemoved() {
-		crateRegistry.clear();
-		connectedCrateCount = 0;
-		super.markRemoved();
-	}
+  public void markCacheForUpdate() {
+    this.needsCacheUpdate = true;
+  }
 
-	private void ensureCache() {
-		if (!needsCacheUpdate) return;
-		if (world == null || world.isClient) return;
+  public int getConnectedCrateCount() {
+    ensureCache();
+    return connectedCrateCount;
+  }
 
-		buildCrateCache();
-		needsCacheUpdate = false;
-	}
-
-	public void markCacheForUpdate() {
-		this.needsCacheUpdate = true;
-	}
-
-	public int getConnectedCrateCount() {
-		ensureCache();
-		return connectedCrateCount;
-	}
-
-	public Map<ItemVariant, LongList> getCrateRegistry() {
-		ensureCache();
-		return crateRegistry;
-	}
+  public Map<ItemVariant, LongList> getCrateRegistry() {
+    ensureCache();
+    return crateRegistry;
+  }
 }

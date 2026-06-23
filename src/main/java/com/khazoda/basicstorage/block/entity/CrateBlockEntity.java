@@ -5,10 +5,8 @@ import com.khazoda.basicstorage.registry.DataComponentRegistry;
 import com.khazoda.basicstorage.storage.CrateSlot;
 import com.khazoda.basicstorage.structure.CrateSlotComponent;
 import com.khazoda.basicstorage.util.NumberFormatter;
-
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -22,153 +20,151 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 public class CrateBlockEntity extends BlockEntity {
-	public final CrateSlot storage = new CrateSlot(this);
+  private static final String CRATE_STACK_NBT_KEY = "crateStack";
+  public final CrateSlot storage = new CrateSlot(this);
+  private ItemVariant cachedDisplayVariant = ItemVariant.blank();
+  private ItemStack cachedDisplayStack = ItemStack.EMPTY;
 
-	private static final String CRATE_STACK_NBT_KEY = "crateStack";
+  private int cachedDisplayAmount = Integer.MIN_VALUE;
+  private String cachedDisplayAmountText = "";
 
-	private ItemVariant cachedDisplayVariant = ItemVariant.blank();
-	private ItemStack cachedDisplayStack = ItemStack.EMPTY;
+  /**
+   * Constructor
+   **/
+  public CrateBlockEntity(BlockPos pos, BlockState state) {
+    super(BlockEntityRegistry.CRATE_BLOCK_ENTITY, pos, state);
+  }
 
-	private int cachedDisplayAmount = Integer.MIN_VALUE;
-	private String cachedDisplayAmountText = "";
+  /**
+   * modified markDirty() method
+   */
+  public void refresh() {
+    if (world instanceof ServerWorld) {
+      world.getWorldChunk(pos).setNeedsSaving(true);
 
-	/**
-	 * Constructor
-	 **/
-	public CrateBlockEntity(BlockPos pos, BlockState state) {
-		super(BlockEntityRegistry.CRATE_BLOCK_ENTITY, pos, state);
-	}
+      BlockState state = getCachedState();
 
-	/**
-	 * modified markDirty() method
-	 */
-	public void refresh() {
-		if (world instanceof ServerWorld) {
-			world.getWorldChunk(pos).setNeedsSaving(true);
+      world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+      world.updateComparators(pos, state.getBlock());
+    }
+  }
 
-			BlockState state = getCachedState();
+  /**
+   * NBT Operations
+   **/
+  @Override
+  protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    super.writeNbt(nbt, registryLookup);
+    writeCrateStorageNbt(nbt, registryLookup);
+  }
 
-			world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
-			world.updateComparators(pos, state.getBlock());
-		}
-	}
+  @Override
+  protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    super.readNbt(nbt, registryLookup);
 
-	/**
-	 * NBT Operations
-	 **/
-	@Override
-	protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-		super.writeNbt(nbt, registryLookup);
-		writeCrateStorageNbt(nbt, registryLookup);
-	}
+    if (nbt.contains(CRATE_STACK_NBT_KEY, NbtElement.COMPOUND_TYPE)) {
+      storage.readNbt(nbt.getCompound(CRATE_STACK_NBT_KEY), registryLookup);
+      return;
+    }
 
-	@Override
-	protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-		super.readNbt(nbt, registryLookup);
+    storage.clear();
+  }
 
-		if (nbt.contains(CRATE_STACK_NBT_KEY, NbtElement.COMPOUND_TYPE)) {
-			storage.readNbt(nbt.getCompound(CRATE_STACK_NBT_KEY), registryLookup);
-			return;
-		}
+  /**
+   * Block Entity Boilerplate
+   */
+  @Override
+  public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
+    NbtCompound nbt = new NbtCompound();
 
-		storage.clear();
-	}
+    // This is required because somehow the client doesn't react to empty nbt packets
+    if (storage.isBlank()) {
+      nbt.putBoolean("empty", true);
+      return nbt;
+    }
 
-	/**
-	 * Block Entity Boilerplate
-	 */
-	@Override
-	public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-		NbtCompound nbt = new NbtCompound();
+    writeCrateStorageNbt(nbt, registryLookup);
+    return nbt;
+  }
 
-		// This is required because somehow the client doesn't react to empty nbt packets
-		if (storage.isBlank()) {
-			nbt.putBoolean("empty", true);
-			return nbt;
-		}
+  @Override
+  public BlockEntityUpdateS2CPacket toUpdatePacket() {
+    return BlockEntityUpdateS2CPacket.create(this);
+  }
 
-		writeCrateStorageNbt(nbt, registryLookup);
-		return nbt;
-	}
+  /**
+   * Data to save and read from ItemStack versions of crate
+   */
+  @Override
+  protected void addComponents(ComponentMap.Builder componentMapBuilder) {
+    super.addComponents(componentMapBuilder);
+    if (this.storage.isBlank()) return;
 
-	@Override
-	public BlockEntityUpdateS2CPacket toUpdatePacket() {
-		return BlockEntityUpdateS2CPacket.create(this);
-	}
+    componentMapBuilder.add(DataComponentRegistry.CRATE_CONTENTS, new CrateSlotComponent(this.storage.getResource(), (int) this.storage.getAmount()));
+  }
 
-	/**
-	 * Data to save and read from ItemStack versions of crate
-	 */
-	@Override
-	protected void addComponents(ComponentMap.Builder componentMapBuilder) {
-		super.addComponents(componentMapBuilder);
-		if (this.storage.isBlank()) return;
+  @Override
+  protected void readComponents(BlockEntity.ComponentsAccess components) {
+    super.readComponents(components);
+    CrateSlotComponent contents = components.getOrDefault(DataComponentRegistry.CRATE_CONTENTS, CrateSlotComponent.DEFAULT);
 
-		componentMapBuilder.add(DataComponentRegistry.CRATE_CONTENTS, new CrateSlotComponent(this.storage.getResource(), (int) this.storage.getAmount()));
-	}
+    if (contents.count() <= 0 || contents.item().isBlank()) return;
 
-	@Override
-	protected void readComponents(BlockEntity.ComponentsAccess components) {
-		super.readComponents(components);
-		CrateSlotComponent contents = components.getOrDefault(DataComponentRegistry.CRATE_CONTENTS, CrateSlotComponent.DEFAULT);
+    try (Transaction t = Transaction.openOuter()) {
+      if (!this.storage.isBlank()) return;
+      this.storage.insert(contents.item(), contents.count(), t);
+      t.commit();
+    }
+  }
 
-		if (contents.count() <= 0 || contents.item().isBlank()) return;
+  /**
+   * NBT Helper
+   */
+  private void writeCrateStorageNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    if (storage.isBlank()) return;
 
-		try (Transaction t = Transaction.openOuter()) {
-			if (!this.storage.isBlank()) return;
-			this.storage.insert(contents.item(), contents.count(), t);
-			t.commit();
-		}
-	}
+    NbtCompound storageNbt = new NbtCompound();
+    storage.writeNbt(storageNbt, registryLookup);
+    nbt.put(CRATE_STACK_NBT_KEY, storageNbt);
+  }
 
-	/**
-	 * NBT Helper
-	 */
-	private void writeCrateStorageNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-		if (storage.isBlank()) return;
+  /**
+   * Gets the ItemStack and caches it for the renderer
+   */
+  public ItemStack getDisplayStack() {
+    if (storage.isBlank()) {
+      cachedDisplayVariant = ItemVariant.blank();
+      cachedDisplayStack = ItemStack.EMPTY;
+      return ItemStack.EMPTY;
+    }
 
-		NbtCompound storageNbt = new NbtCompound();
-		storage.writeNbt(storageNbt, registryLookup);
-		nbt.put(CRATE_STACK_NBT_KEY, storageNbt);
-	}
+    ItemVariant variant = storage.getResource();
 
-	/**
-	 * Gets the ItemStack and caches it for the renderer
-	 */
-	public ItemStack getDisplayStack() {
-		if (storage.isBlank()) {
-			cachedDisplayVariant = ItemVariant.blank();
-			cachedDisplayStack = ItemStack.EMPTY;
-			return ItemStack.EMPTY;
-		}
+    if (!variant.equals(cachedDisplayVariant)) {
+      cachedDisplayVariant = variant;
+      cachedDisplayStack = variant.toStack();
+    }
 
-		ItemVariant variant = storage.getResource();
+    return cachedDisplayStack;
+  }
 
-		if (!variant.equals(cachedDisplayVariant)) {
-			cachedDisplayVariant = variant;
-			cachedDisplayStack = variant.toStack();
-		}
+  /**
+   * Gets the item display amount and caches it for the renderer
+   */
+  public String getDisplayAmountText() {
+    if (storage.isBlank()) {
+      cachedDisplayAmount = 0;
+      cachedDisplayAmountText = "";
+      return "";
+    }
 
-		return cachedDisplayStack;
-	}
+    int amount = (int) storage.getAmount();
 
-	/**
-	 * Gets the item display amount and caches it for the renderer
-	 */
-	public String getDisplayAmountText() {
-		if (storage.isBlank()) {
-			cachedDisplayAmount = 0;
-			cachedDisplayAmountText = "";
-			return "";
-		}
+    if (amount != cachedDisplayAmount) {
+      cachedDisplayAmount = amount;
+      cachedDisplayAmountText = NumberFormatter.format(amount);
+    }
 
-		int amount = (int)storage.getAmount();
-
-		if (amount != cachedDisplayAmount) {
-			cachedDisplayAmount = amount;
-			cachedDisplayAmountText = NumberFormatter.format(amount);
-		}
-
-		return cachedDisplayAmountText;
-	}
+    return cachedDisplayAmountText;
+  }
 }

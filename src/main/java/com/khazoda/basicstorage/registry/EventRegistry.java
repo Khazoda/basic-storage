@@ -6,10 +6,10 @@ import com.khazoda.basicstorage.block.CrateStationBlock;
 
 
 public class EventRegistry {
-	public static void init() {
-		CrateBlock.initOnUseMethod();
-		CrateStationBlock.initOnUseMethod();
+  public static void init() {
+    CrateBlock.initOnUseMethod();
+    CrateStationBlock.initOnUseMethod();
 
-		BasicStorage.loadedRegistries += 1;
-	}
+    BasicStorage.loadedRegistries += 1;
+  }
 }
