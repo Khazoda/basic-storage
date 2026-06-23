@@ -32,10 +32,12 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
   private static final Quaternionf ROT_Y_90 = RotationAxis.POSITIVE_Y.rotationDegrees(90);
   private static final Quaternionf ROT_Y_180 = RotationAxis.POSITIVE_Y.rotationDegrees(180);
   private static final Quaternionf ROT_Y_270 = RotationAxis.POSITIVE_Y.rotationDegrees(270);
+  private static final Quaternionf ITEM_NORMAL_ROTATION = RotationAxis.POSITIVE_X.rotationDegrees(-15).mul(RotationAxis.POSITIVE_Y.rotationDegrees(20));
 
   private static final float ITEM_Y_OFFSET = 0.125f;
   private static final float ITEM_SCALE_XY = 0.375f;
-  private static final float ITEM_SCALE_Z = 0.005f;
+  private static final float ITEM_NORMAL_DEPTH_SCALE = 0.5f;
+  private static final float ITEM_POSITION_DEPTH_SCALE = 0.01f;
 
   private static final float TEXT_Y_OFFSET = 0.21f;
   private static final float TEXT_Z_OFFSET = -0.01f;
@@ -134,7 +136,9 @@ public class CrateBlockEntityRenderer implements BlockEntityRenderer<CrateBlockE
 
     matrices.push();
     matrices.translate(0f, ITEM_Y_OFFSET, 0f);
-    matrices.scale(ITEM_SCALE_XY, ITEM_SCALE_XY, ITEM_SCALE_Z);
+    matrices.scale(ITEM_SCALE_XY, ITEM_SCALE_XY, ITEM_NORMAL_DEPTH_SCALE);
+    matrices.peek().getPositionMatrix().scale(1f, 1f, ITEM_POSITION_DEPTH_SCALE);
+    matrices.peek().getNormalMatrix().rotate(ITEM_NORMAL_ROTATION);
 
     BakedModel model = itemRenderer.getModel(stack, world, null, seed);
     itemRenderer.renderItem(stack, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV, model);
