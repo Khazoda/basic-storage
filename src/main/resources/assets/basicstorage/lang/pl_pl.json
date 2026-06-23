@@ -1,0 +1,14 @@
+{
+  "block.basicstorage.crate": "Skrzynia",
+  "message.basicstorage.crate.empty": "Puste",
+  "basicstorage.itemGroup": "Basic Storage",
+  "block.basicstorage.crate_station": "Stacja Skrzyń",
+  "message.basicstorage.station.no_matching_crates": "Brak Pasujących Skrzyń",
+  "subtitles.basicstorage.block.crate.insert_one": "Przedmioty Włożone",
+  "subtitles.basicstorage.block.crate.insert_many": "Stack Włożony",
+  "subtitles.basicstorage.block.crate.insert_loads": "Stacki Włożone",
+  "subtitles.basicstorage.block.crate.extract_one": "Przedmioty Wyjęte",
+  "subtitles.basicstorage.block.crate.extract_many": "Stack Wyjęty",
+  "subtitles.basicstorage.block.crate.no_match": "Stacja Odrzuca Przedmiot",
+  "block.basicstorage.crate_connector": "Łącznik Skrzyń"
+}

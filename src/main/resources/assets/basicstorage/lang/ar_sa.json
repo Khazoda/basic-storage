@@ -1,0 +1,14 @@
+{
+  "block.basicstorage.crate": "صندوق",
+  "message.basicstorage.crate.empty": "فارغ",
+  "basicstorage.itemGroup": "تخزين أساسي",
+  "block.basicstorage.crate_station": "محطة صندوق",
+  "message.basicstorage.station.no_matching_crates": "• لا توجد صناديق مطابقة •",
+  "subtitles.basicstorage.block.crate.insert_one": "تم إدراج عنصر",
+  "subtitles.basicstorage.block.crate.insert_many": "تم إدراج حزمة",
+  "subtitles.basicstorage.block.crate.insert_loads": "تم إدراج عدة حزم",
+  "subtitles.basicstorage.block.crate.extract_one": "تم إستخراج عنصر",
+  "subtitles.basicstorage.block.crate.extract_many": "تم إستخراج حزمة",
+  "subtitles.basicstorage.block.crate.no_match": "المحطة ترفض العنصر",
+  "block.basicstorage.crate_connector": "موصل صندوق"
+}

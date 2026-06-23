@@ -1,0 +1,14 @@
+{
+  "block.basicstorage.crate": "Caja",
+  "message.basicstorage.crate.empty": "Caja vacía",
+  "basicstorage.itemGroup": "Almacenamiento básico",
+  "block.basicstorage.crate_station": "Estación de caja",
+  "message.basicstorage.station.no_matching_crates": "• No hay cajas coincidentes •",
+  "subtitles.basicstorage.block.crate.insert_one": "Item insertado",
+  "subtitles.basicstorage.block.crate.insert_many": "Monton insertado",
+  "subtitles.basicstorage.block.crate.insert_loads": "Montones insertados",
+  "subtitles.basicstorage.block.crate.extract_one": "Objeto extraído",
+  "subtitles.basicstorage.block.crate.extract_many": "Monton extraído",
+  "subtitles.basicstorage.block.crate.no_match": "La estación rechaza el objeto",
+  "block.basicstorage.crate_connector": "Conector de caja"
+}
