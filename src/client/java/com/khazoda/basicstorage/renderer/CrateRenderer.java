@@ -7,8 +7,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelLighter;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -33,6 +34,7 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity, Crat
   private static final Quaternionf ITEM_LIGHT_ROTATION_3D = new Quaternionf().rotateX((float) Math.toRadians(-15)).rotateY((float) Math.toRadians(15));
   private final ItemModelResolver itemModelManager;
   private final Font textRenderer;
+  private final BlockModelLighter blockModelLighter = new BlockModelLighter();
 
   public CrateRenderer(BlockEntityRendererProvider.Context context) {
     this.itemModelManager = context.itemModelResolver();
@@ -55,16 +57,16 @@ public class CrateRenderer implements BlockEntityRenderer<CrateBlockEntity, Crat
     BlockPos pos = be.getBlockPos();
     var world = be.getLevel();
 
-    if (world != null) {
+    if (world instanceof ClientLevel clientLevel) {
       BlockPos neighborPos = pos.relative(facingDir);
-      BlockState neighborState = world.getBlockState(neighborPos);
+      BlockState neighborState = clientLevel.getBlockState(neighborPos);
 
       if (!Block.shouldRenderFace(state, neighborState, facingDir)) {
         crateState.itemRenderState = null;
         crateState.itemCount = 0;
         return;
       }
-      crateState.lightCoords = LevelRenderer.getLightCoords(world, neighborPos);
+      crateState.lightCoords = blockModelLighter.getLightCoords(state, clientLevel, neighborPos);
     }
 
     if (be.storage.isResourceBlank()) {

@@ -110,7 +110,7 @@ public class CrateBlockEntity extends BlockEntity implements ItemOwner {
   }
 
   public Vec3 position() {
-    return this.getBlockPos().getCenter();
+    return Vec3.atCenterOf(this.getBlockPos());
   }
 
   public float getVisualRotationYInDegrees() {
